@@ -1,0 +1,3 @@
+vrep运行开始后就会等待matlab发送指令
+
+离线的话，是先跑完matlab，然后再跑vrep，在线，是matlab和vrep同步跑
