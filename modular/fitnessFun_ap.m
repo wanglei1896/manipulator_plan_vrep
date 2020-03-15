@@ -131,9 +131,9 @@ classdef fitnessFun_ap
 
             % decode configuration vector
             % to get initial and final point joint configuration
-            x0=qTable.q(Serialnumber);
-            vx0=qTable.vq(Serialnumber);
-            ax0=qTable.aq(Serialnumber);
+            x0=qTable.q(:,Serialnumber);
+            vx0=qTable.vq(:,Serialnumber);
+            ax0=qTable.aq(:,Serialnumber);
 
             % to get middle point joint-configuration and time-interval
             x1=q_final';

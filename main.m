@@ -6,12 +6,12 @@ global  outputData ...
         model           %机械臂的运动学模型
 %}
 %% 配置、环境数据获取
-initial_native_p2p;
+initial_native_ap;
 %%% 生成
 %initial_fromVrep;
 
 %% 规划过程
-planner_p2p;
+planner_ap;
 
 %% 在环境中执行规划出的位姿/轨迹
 %executeInVrep;

@@ -20,9 +20,5 @@ inputData.pFinal = [1 0 0 0.6;
                     0 0 1 0;
                     0 0 0 1];
 [inputData.qStart, inputData.qFinal] = ...
-    regularJointPos(model.ikunc(inputData.pStart), model.ikunc(inputData.pFinal));
+    regular_JointPos(model.ikunc(inputData.pStart), model.ikunc(inputData.pFinal));
 outputData.spacenum = 20;
-
-function [regqStart, regqFinal] = regularJointPos(qStart, qFinal)
-    
-end

@@ -67,7 +67,8 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         end
         pop_fitness=zeros(size(pop,1),1);
         for i=1:size(pop,1)
-            assert(pop(i,end-1)>0 && pop(i,end)>0);
+            %assert(pop(i,end-1)>0 && pop(i,end)>0);
+            assert(pop(i,end)>0)
             pop_fitness(i) = fitnessfun(pop(i,:));
         end
         %pop_fitness = [ones(length(pop),1) pop pop.^2] * [1 1 -1]';

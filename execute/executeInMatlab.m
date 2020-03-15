@@ -5,11 +5,11 @@ global model outputData
 
 
 %使用toolbox自带的点到点轨迹
-outputData_bench.trajactory = model.jtraj(inputData.pStart,inputData.pFinal,20,'ikine',@model.ikunc)';
+%outputData_bench.trajectory = jtraj(inputData.qStart,inputData.qFinal,20)';
 
 
 %机械臂运行
-model.plot(outputData.trajectory','trail',{'r'});
+model.plot(outputData.trajectory(:,1:11)','trail',{'r'});
 
 figure,
 plotJoint_Time(outputData);
@@ -23,7 +23,7 @@ function plotJoint_Time(data)
         temp = linspace(data.segment_curtimes(i),data.segment_curtimes(i+1),spacePerSeg+1);
         t=[t, temp(2:end)];
     end
-    plot(t, data.trajectory(1:6,:)','.');
+    plot(t, data.trajectory(1:6,:)','-');
     %plot(linspace(0,data.total_time,data.spacenum+1),data.trajectory(1:6,:)','.');
     legend joint1 joint2 joint3 joint4 joint5 joint6
     hold on,

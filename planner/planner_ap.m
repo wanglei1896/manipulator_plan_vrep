@@ -31,7 +31,7 @@ function main()
 global inputData outputData optimLog fitnessFun
     %% 算法初始化
     sizepop = 10;
-    iternum = 10;
+    iternum = 50;
     groupnum = optimLog.group_num;
 
     %% 调用算法规划
@@ -40,46 +40,47 @@ global inputData outputData optimLog fitnessFun
     % 第一轮
     for i=1:2:groupnum
         fitnessFun.serial_number = i;
-        fitnessFun.targetPath = inputData.path(:,1:spacePerGroup+(i-1)*spacePerGroup);
+        fitnessFun.target_path = inputData.path(:,1:spacePerGroup+(i-1)*spacePerGroup);
         [optimLog.group(i).fitness_history, optimLog.group(i).solution_history, optimization_time] ...
             = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
         last_solution = optimLog.group(i).solution_history(end,:);
         [last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
-        % 更新qTable
-        fitnessFun.qTable.q(i) = last_result(1:6,end);
-        fitnessFun.qTable.vq(i) = last_solution(7:12,end);
-        fitnessFun.qTable.aq(i) = last_solution(13:18,end);
+        % 更新qTable每段右端点
+        fitnessFun.qTable.q(:,i+1) = last_result(1:6,end);
+        fitnessFun.qTable.vq(:,i+1) = last_result(7:12,end);
+        fitnessFun.qTable.aq(:,i+1) = last_result(13:18,end);
     end
     % 第二轮
     for i=2:2:groupnum
         fitnessFun.serial_number = i;
-        fitnessFun.targetPath = inputData.path(:,1:spacePerGroup+(i-1)*spacePerGroup);
+        fitnessFun.target_path = inputData.path(:,1:spacePerGroup+(i-1)*spacePerGroup);
         [optimLog.group(i).fitness_history, optimLog.group(i).solution_history, optimization_time] ...
             = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
     end
     disp('planning ended');
     
     % 综合各段，得出最终轨迹
-    outputData.trajectory = inputData.qStart;
+    outputData.trajectory = inputData.qStart';
+    assert(size(outputData.trajectory,2)==1) %trajectory中角度应存在每列上
     outputData.segment_curtimes(1) = 0;
     for i=1:groupnum
         last_solution = optimLog.group(i).solution_history(end,:);
         [last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         outputData.segment_times(i) = last_solution(13);
         outputData.segment_curtimes(i+1) = outputData.segment_curtimes(i)+outputData.segment_times(i);
-        outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; %不要各组第一个点，以免重复
+        outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; %舍弃各组的第一个点，以免重复
     end
 end
 
 function qTable = initial_parameters(qStart, positionFinal, model)
 global optimLog
-    assert(size(positionFinal)==[3,1]);
-    assert(size(qStart)==[1,6]);
+    assert(isequal(size(positionFinal),[3,1]));
+    assert(isequal(size(qStart),[1,6]));
     pFinal = [1 0 0 0;
               0 1 0 0;
               0 0 1 0;
               0 0 0 1];
-    pFinal(:,1:3) = positionFinal;
+    pFinal(1:3,4) = positionFinal;
     qFinal = model.ikunc(pFinal);
     [q, vq, aq] = jtraj(qStart,qFinal,optimLog.group_num+1);
     qTable.q = q'; qTable.vq = vq'; qTable.aq = aq';
