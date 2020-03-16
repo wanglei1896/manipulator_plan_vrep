@@ -1,10 +1,10 @@
-%% along path µÄ¹æ»®¹ı³Ì
+%% along path çš„è§„åˆ’è¿‡ç¨‹
 % 
 global outputData inputData optimLog model fitnessFun
-%q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%³õÊ¼¹Ø½Ú½Ç
+%q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%åˆå§‹å…³èŠ‚è§’
 
-%% ÅäÖÃ´ú¼Ûº¯Êı
-% ¹ì¼£±àÂë
+%% é…ç½®ä»£ä»·å‡½æ•°
+% è½¨è¿¹ç¼–ç 
 fitnessFun = fitnessFun_ap(model);
 fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % q * 6
                             -pi, pi; -pi, pi;
@@ -15,29 +15,29 @@ fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % q * 6
                             0.1, 10]; % time
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 
-% Îª¸÷×éÌìÅ£µÄ²ÎÊı³õÊ¼»¯Öµ
-% qTableµÄµÚÒ»ÁĞÎªÆğÊ¼¶Ëµã£¬ºóÃ¿Ò»ÁĞÎªÃ¿¶ÎµÄÓÒ¶Ëµã
+% ä¸ºå„ç»„å¤©ç‰›çš„å‚æ•°åˆå§‹åŒ–å€¼
+% qTableçš„ç¬¬ä¸€åˆ—ä¸ºèµ·å§‹ç«¯ç‚¹ï¼Œåæ¯ä¸€åˆ—ä¸ºæ¯æ®µçš„å³ç«¯ç‚¹
 fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
 
-%% Ö÷¹æ»®¹ı³Ì
+%% ä¸»è§„åˆ’è¿‡ç¨‹
 main();
 
-%% optimLog¸üĞÂ£¬Òò´ËÖØÖÃÊÜÆäÓ°ÏìµÄ±äÁ¿
+%% optimLogæ›´æ–°ï¼Œå› æ­¤é‡ç½®å—å…¶å½±å“çš„å˜é‡
 if exist('histo_t1_t2','var')
     clear histo_t1_t2
 end
 
 function main()
 global inputData outputData optimLog fitnessFun
-    %% Ëã·¨³õÊ¼»¯
+    %% ç®—æ³•åˆå§‹åŒ–
     sizepop = 10;
     iternum = 50;
     groupnum = optimLog.group_num;
 
-    %% µ÷ÓÃËã·¨¹æ»®
+    %% è°ƒç”¨ç®—æ³•è§„åˆ’
     disp('planning start.');
     spacePerGroup = inputData.spacenum/groupnum;
-    % µÚÒ»ÂÖ
+    % ç¬¬ä¸€è½®
     for i=1:2:groupnum
         fitnessFun.serial_number = i;
         fitnessFun.target_path = inputData.path(:,1:spacePerGroup+(i-1)*spacePerGroup);
@@ -45,12 +45,12 @@ global inputData outputData optimLog fitnessFun
             = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
         last_solution = optimLog.group(i).solution_history(end,:);
         [last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
-        % ¸üĞÂqTableÃ¿¶ÎÓÒ¶Ëµã
+        % æ›´æ–°qTableæ¯æ®µå³ç«¯ç‚¹
         fitnessFun.qTable.q(:,i+1) = last_result(1:6,end);
         fitnessFun.qTable.vq(:,i+1) = last_result(7:12,end);
         fitnessFun.qTable.aq(:,i+1) = last_result(13:18,end);
     end
-    % µÚ¶şÂÖ
+    % ç¬¬äºŒè½®
     for i=2:2:groupnum
         fitnessFun.serial_number = i;
         fitnessFun.target_path = inputData.path(:,1:spacePerGroup+(i-1)*spacePerGroup);
@@ -59,16 +59,16 @@ global inputData outputData optimLog fitnessFun
     end
     disp('planning ended');
     
-    % ×ÛºÏ¸÷¶Î£¬µÃ³ö×îÖÕ¹ì¼£
+    % ç»¼åˆå„æ®µï¼Œå¾—å‡ºæœ€ç»ˆè½¨è¿¹
     outputData.trajectory = inputData.qStart';
-    assert(size(outputData.trajectory,2)==1) %trajectoryÖĞ½Ç¶ÈÓ¦´æÔÚÃ¿ÁĞÉÏ
+    assert(size(outputData.trajectory,2)==1) %trajectoryä¸­è§’åº¦åº”å­˜åœ¨æ¯åˆ—ä¸Š
     outputData.segment_curtimes(1) = 0;
     for i=1:groupnum
         last_solution = optimLog.group(i).solution_history(end,:);
         [last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         outputData.segment_times(i) = last_solution(13);
         outputData.segment_curtimes(i+1) = outputData.segment_curtimes(i)+outputData.segment_times(i);
-        outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; %ÉáÆú¸÷×éµÄµÚÒ»¸öµã£¬ÒÔÃâÖØ¸´
+        outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; %èˆå¼ƒå„ç»„çš„ç¬¬ä¸€ä¸ªç‚¹ï¼Œä»¥å…é‡å¤
     end
 end
 

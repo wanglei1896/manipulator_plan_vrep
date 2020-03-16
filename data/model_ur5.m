@@ -1,5 +1,5 @@
-%% ur5»úÐµ±Û½¨Ä£
-% Ê¹ÓÃmatlab robotic toolbox½¨Á¢»úÐµ±ÛÄ£ÐÍ
+%% ur5æœºæ¢°è‡‚å»ºæ¨¡
+% ä½¿ç”¨matlab robotic toolboxå»ºç«‹æœºæ¢°è‡‚æ¨¡åž‹
 function [ur5_kinemo]=model_ur5()
   mdl_ur5();
   ur5.base = transl(0,0,-0.0307);

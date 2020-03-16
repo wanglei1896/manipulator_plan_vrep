@@ -1,12 +1,12 @@
-%% ¹æ»®¹ı³Ì
+%% è§„åˆ’è¿‡ç¨‹
 %
 
 format long;
 global outputData inputData optimLog model fitnessFun
-%q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%³õÊ¼¹Ø½Ú½Ç
+%q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%åˆå§‹å…³èŠ‚è§’
 
-%% ÅäÖÃ´ú¼Ûº¯Êı
-% ¹ì¼£±àÂë
+%% é…ç½®ä»£ä»·å‡½æ•°
+% è½¨è¿¹ç¼–ç 
 fitnessFun = fitnessFun_p2p(model);
 fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % qm * 6
                             -pi, pi; -pi, pi;
@@ -18,23 +18,23 @@ fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % qm * 6
 fitnessFun.spacenum = outputData.spacenum;
 fitnessFun.qStart = inputData.qStart; fitnessFun.qFinal =inputData.qFinal;
 
-%% Ëã·¨³õÊ¼»¯
+%% ç®—æ³•åˆå§‹åŒ–
 %{ 
 iter=length(t);
 initx=pStart(1,4);
 inity=pStart(2,4);
 initz=pStart(3,4);
-% ÆÚÍûÎ»ÖÃÓëÊµ¼ÊÎ»ÖÃ
+% æœŸæœ›ä½ç½®ä¸å®é™…ä½ç½®
 diseredPosition=zeros(3,iter);
 actualPosition=zeros(3,iter);
-% Êä³öµÄ¹Ø½ÚÔË¶¯ĞòÁĞ
+% è¾“å‡ºçš„å…³èŠ‚è¿åŠ¨åºåˆ—
 outputjointValue=zeros(6,iter);
 %}
 sizepop = 10;
 iternum = 100;
 
 
-%% µ÷ÓÃËã·¨¹æ»®
+%% è°ƒç”¨ç®—æ³•è§„åˆ’
 disp('planning start.');
 
 [optimLog.fitness_history, optimLog.solution_history, optimization_time] ...
@@ -71,7 +71,7 @@ end
 %}
 disp('planning ended');
 
-% optimLog¸üĞÂ£¬Òò´ËÖØÖÃÊÜÆäÓ°ÏìµÄ±äÁ¿
+% optimLogæ›´æ–°ï¼Œå› æ­¤é‡ç½®å—å…¶å½±å“çš„å˜é‡
 if exist('histo_t1_t2','var')
     clear histo_t1_t2
 end

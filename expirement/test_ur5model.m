@@ -1,9 +1,9 @@
-% ÓÃÓÚ²âÊÔmatlab¹¤¾ßÏäÖĞÄ£ĞÍÓëv-repÄ£ĞÍµÄÆ¥Åä¶È
+% ç”¨äºæµ‹è¯•matlabå·¥å…·ç®±ä¸­æ¨¡å‹ä¸v-repæ¨¡å‹çš„åŒ¹é…åº¦
 % @require 
-%   outputjointValue£º   ÊäÈë¸øvrepµÄ¹Ø½ÚÔË¶¯½Ç
-%   diseredPosition£º    matlab toolbox×ø±êÏµÏÂµÄtip×ø±ê
+%   outputjointValueï¼š   è¾“å…¥ç»™vrepçš„å…³èŠ‚è¿åŠ¨è§’
+%   diseredPositionï¼š    matlab toolboxåæ ‡ç³»ä¸‹çš„tipåæ ‡
 % @
-%   actualPosition£º     vrep×ø±êÏµÏÂÔË¶¯µÄtip×ø±ê
+%   actualPositionï¼š     vrepåæ ‡ç³»ä¸‹è¿åŠ¨çš„tipåæ ‡
 
 global outputjointValue diseredPosition
 
@@ -33,9 +33,9 @@ if (clientID>-1)
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(5),outputjointValue(5,i),vrep.simx_opmode_oneshot);
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(6),outputjointValue(6,i)+pi/2,vrep.simx_opmode_oneshot);
                 vrep.simxPauseCommunication(clientID,0);
-                % ÓÃtarget_dummy´ú±ítoolbox×ø±êÏµÏÂµÄÂ·¾¶
+                % ç”¨target_dummyä»£è¡¨toolboxåæ ‡ç³»ä¸‹çš„è·¯å¾„
                 vrep.simxSetObjectPosition(clientID,target_dummy,handle_rigArmjoint(1),diseredPosition(:,i),vrep.simx_opmode_oneshot);
-                % vrep¶ËµÄÂ·¾¶
+                % vrepç«¯çš„è·¯å¾„
                 [returnCode,actualPosition(:,i)]=vrep.simxGetObjectPosition(clientID,tip_dummy,handle_rigArmjoint(1),vrep.simx_opmode_blocking);
                 
                 pause(0.1);

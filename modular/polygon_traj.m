@@ -1,15 +1,15 @@
 function [px,py,spacenum] = polygon_traj(polynum,spannum,lpnum)
-%FORWORD_TRAJ ÓÃÓÚÉú³É¶à½ÇĞÎ¹ì¼£
-%   ´Ë´¦ÏÔÊ¾ÏêÏ¸ËµÃ÷
+%FORWORD_TRAJ ç”¨äºç”Ÿæˆå¤šè§’å½¢è½¨è¿¹
+%   æ­¤å¤„æ˜¾ç¤ºè¯¦ç»†è¯´æ˜
 
-o=[1.5,0];   %Ô²ĞÄ×ø±ê
-r=1;    %Ô²°ë¾¶
-phi=0.2;  %³õÏà½Ç
+o=[1.5,0];   %åœ†å¿ƒåæ ‡
+r=1;    %åœ†åŠå¾„
+phi=0.2;  %åˆç›¸è§’
 t=linspace(phi,2*pi+phi,polynum+1);
 [x1,y1]=pol2cart(t,r);
 x=o(1)+x1;
 y=o(2)+y1;
-points=[x;y];   %½Çµã¼¯
+points=[x;y];   %è§’ç‚¹é›†
 t1=1; t2=t1+spannum;
 for i=1:polynum
     px((i-1)*lpnum+1:i*lpnum)=linspace(x(t1),x(t2),lpnum);

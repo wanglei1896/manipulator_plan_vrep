@@ -1,14 +1,14 @@
 classdef fitnessFun_ap
-    %FITNESSFUN_AP ´Ë´¦ÏÔÊ¾ÓĞ¹Ø´ËÀàµÄÕªÒª
-    %   ÑØÂ·¾¶ÔË¶¯(along path)¹æ»®µÄ´ú¼Ûº¯Êı
+    %FITNESSFUN_AP æ­¤å¤„æ˜¾ç¤ºæœ‰å…³æ­¤ç±»çš„æ‘˜è¦
+    %   æ²¿è·¯å¾„è¿åŠ¨(along path)è§„åˆ’çš„ä»£ä»·å‡½æ•°
     
     properties
-        % ·ÃÎÊÈ«¾Ö±äÁ¿Ì«Âı£¬ËùÒÔ´æÔÚÕâÀï×÷ÎªË½ÓĞÊı¾İ
-        d; a; alpha; joint_num; % »úĞµ±ÛµÄÏà¹Ø²ÎÊı
-        spacenum; % Éú³É¹ì¼£¶ÎÊı
-        qTable; % ¸÷¹ì¼£¶Î¶Ëµã´¦µÄ²ÎÊıÖµ£¨¹Ø½ÚÎ»ÖÃ¡¢ËÙ¶È¡¢¼ÓËÙ¶È£©
-        serial_number; %Ä¿Ç°ÓÅ»¯µÄÊÇµÚ¼¸¶Î
-        target_path; %Ä¿Ç°ÒªÓÅ»¯¶ÎµÄÄ¿±êÂ·¾¶
+        % è®¿é—®å…¨å±€å˜é‡å¤ªæ…¢ï¼Œæ‰€ä»¥å­˜åœ¨è¿™é‡Œä½œä¸ºç§æœ‰æ•°æ®
+        d; a; alpha; joint_num; % æœºæ¢°è‡‚çš„ç›¸å…³å‚æ•°
+        spacenum; % ç”Ÿæˆè½¨è¿¹æ®µæ•°
+        qTable; % å„è½¨è¿¹æ®µç«¯ç‚¹å¤„çš„å‚æ•°å€¼ï¼ˆå…³èŠ‚ä½ç½®ã€é€Ÿåº¦ã€åŠ é€Ÿåº¦ï¼‰
+        serial_number; %ç›®å‰ä¼˜åŒ–çš„æ˜¯ç¬¬å‡ æ®µ
+        target_path; %ç›®å‰è¦ä¼˜åŒ–æ®µçš„ç›®æ ‡è·¯å¾„
         parameter_bound;
     end
     
@@ -20,7 +20,7 @@ classdef fitnessFun_ap
         end
         
         function fitness_value = fitnessf(obj, parameters)
-            % ¸øÓÅ»¯Ëã·¨»Øµ÷ÓÃ£¬×¢Òâ½Ó¿ÚÓëÆä±£³ÖÒ»ÖÂ
+            % ç»™ä¼˜åŒ–ç®—æ³•å›è°ƒç”¨ï¼Œæ³¨æ„æ¥å£ä¸å…¶ä¿æŒä¸€è‡´
             [status, result] = obj.convertSolutionToTrajectory(parameters);
             if status ~= 0
                 fitness_value = 1/(result*1000);
@@ -33,10 +33,10 @@ classdef fitnessFun_ap
                 vl=result(7:12,:);
                 al=result(13:18,:);
                 %{
-                  ft±íÊ¾¹ì¼£ÖĞËÙ¶È/¼ÓËÙ¶È³¬¹ımaxµÄ¹ì¼£Æ¬¶ÎµÄ¸÷²ÉÑùµãËÙ¶È/¼ÓËÙ¶ÈÖ®ºÍ¡£
-                  ´ËÖ¸±ê¿É·¢ÏÖ¹ì¼£ÖĞËÙ¶È/¼ÓËÙ¶È¹ı¸ßµÄÆ¬¶Î£¬²¢Òıµ¼agent¼õÉÙ»ò¸ÄÉÆÕâĞ©Æ¬¶Î£»
-                  ´ËÖ¸±ê¶ÔµÍÓÚmaxµÄ¹ì¼£Æ¬¶ÎÎŞÖ¸µ¼£¬ÊÊºÏ×÷Îª³Í·£Ïî£»
-                  ´ËÖ¸±êÒ×Òı·¢ÔË¶¯Ê±¼ä(t1¡¢t2)µÄÀ©ÕÅ£¬×îºÃÅäºÏ'time'Ö¸±êÊ¹ÓÃ
+                  ftè¡¨ç¤ºè½¨è¿¹ä¸­é€Ÿåº¦/åŠ é€Ÿåº¦è¶…è¿‡maxçš„è½¨è¿¹ç‰‡æ®µçš„å„é‡‡æ ·ç‚¹é€Ÿåº¦/åŠ é€Ÿåº¦ä¹‹å’Œã€‚
+                  æ­¤æŒ‡æ ‡å¯å‘ç°è½¨è¿¹ä¸­é€Ÿåº¦/åŠ é€Ÿåº¦è¿‡é«˜çš„ç‰‡æ®µï¼Œå¹¶å¼•å¯¼agentå‡å°‘æˆ–æ”¹å–„è¿™äº›ç‰‡æ®µï¼›
+                  æ­¤æŒ‡æ ‡å¯¹ä½äºmaxçš„è½¨è¿¹ç‰‡æ®µæ— æŒ‡å¯¼ï¼Œé€‚åˆä½œä¸ºæƒ©ç½šé¡¹ï¼›
+                  æ­¤æŒ‡æ ‡æ˜“å¼•å‘è¿åŠ¨æ—¶é—´(t1ã€t2)çš„æ‰©å¼ ï¼Œæœ€å¥½é…åˆ'time'æŒ‡æ ‡ä½¿ç”¨
                 %}
                 ft=0;
                 maxv=pi/4;
@@ -52,7 +52,7 @@ classdef fitnessFun_ap
                 %}
                 fq=sum(sum(abs(diff(ql'))));
                 %{
-                  fdis±íÊ¾»úĞµ±ÛÄ©¶Ë»®¹ıµÄÂ·¾¶ÓëÒªÇóÂ·¾¶µÄÏà·û³Ì¶È¶ÈÁ¿£¨Ô½Ğ¡Ô½ºÃ£©
+                  fdisè¡¨ç¤ºæœºæ¢°è‡‚æœ«ç«¯åˆ’è¿‡çš„è·¯å¾„ä¸è¦æ±‚è·¯å¾„çš„ç›¸ç¬¦ç¨‹åº¦åº¦é‡ï¼ˆè¶Šå°è¶Šå¥½ï¼‰
                 %}
                 pos=zeros(3,size(ql,2));
                 for i=1:size(ql,2)
@@ -61,17 +61,17 @@ classdef fitnessFun_ap
                 regPos = regular_path(pos,size(obj.target_path,2)-1);
                 fdis=sum(sum(abs(obj.target_path-regPos)));
                 %{
-                  time±íÊ¾¹ì¼£ÔË¶¯µÄÊ±¼ä
+                  timeè¡¨ç¤ºè½¨è¿¹è¿åŠ¨çš„æ—¶é—´
                 %}
                 time=sum(parameters(end));
                 cost_vec=[ft,fq,fdis,time];
                 cost=cost_vec*[0,0,1,0]';
-                evaluate_value=1/(cost+eps); %·ÀÖ¹/0´íÎó
+                evaluate_value=1/(cost+eps); %é˜²æ­¢/0é”™è¯¯
             end
             function pos = fastForwardTrans(number, theta)
                 a=obj.a; d=obj.d; alpha=obj.alpha;
-                % toolboxÖĞ×Ô´øµÄÕıÔË¶¯Ñ§Òªµ÷ÓÃ¶ÔÏó£¬Ì«Âı£¬ÕâÀïÓÅ»¯Ò»¸ö¸ü¿ìµÄ°æ±¾
-                % number±íÊ¾¹Ø½Ú±àºÅ£¬0-5ºÅ¹Ø½Ú£¬6ºÅÄ©¶Ë
+                % toolboxä¸­è‡ªå¸¦çš„æ­£è¿åŠ¨å­¦è¦è°ƒç”¨å¯¹è±¡ï¼Œå¤ªæ…¢ï¼Œè¿™é‡Œä¼˜åŒ–ä¸€ä¸ªæ›´å¿«çš„ç‰ˆæœ¬
+                % numberè¡¨ç¤ºå…³èŠ‚ç¼–å·ï¼Œ0-5å·å…³èŠ‚ï¼Œ6å·æœ«ç«¯
                 if number == 0
                     pos = [0 0 0]'; return;
                 end
@@ -140,9 +140,9 @@ classdef fitnessFun_ap
             vx1=vq_final';
             t1=time;
 
-            assert(isequal(size(x0),[num_joints,1])); % ĞèÎªÁĞÏòÁ¿
-            assert(isequal(size(x1),[num_joints,1])); % ĞèÎªÁĞÏòÁ¿
-            assert(isequal(size(vx1),[num_joints,1])); % ĞèÎªÁĞÏòÁ¿
+            assert(isequal(size(x0),[num_joints,1])); % éœ€ä¸ºåˆ—å‘é‡
+            assert(isequal(size(x1),[num_joints,1])); % éœ€ä¸ºåˆ—å‘é‡
+            assert(isequal(size(vx1),[num_joints,1])); % éœ€ä¸ºåˆ—å‘é‡
 
             % compute interpolate factor(analytical solution)
             a00=x0;
@@ -157,7 +157,7 @@ classdef fitnessFun_ap
             % disp([middlespace t1 t2])
             tl1=tl(1:middlespace); % at least 1:1
             tl2=tl(middlespace+1:end)... % at least end:end
-                   -time1; % ÓÉÓÚ¼ÆËãA2ÊÇÄ¬ÈÏ¹ì¼£´Ó0Ê±¿Ì¿ªÊ¼
+                   -time1; % ç”±äºè®¡ç®—A2æ˜¯é»˜è®¤è½¨è¿¹ä»0æ—¶åˆ»å¼€å§‹
 %}
             tl1=linspace(0,t1,spacenum+1);
             

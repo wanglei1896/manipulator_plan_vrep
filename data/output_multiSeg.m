@@ -1,9 +1,9 @@
-%% along path¹æ»®£¬»úĞµ±ÛµÄÊä³öÎ»×Ë¹ì¼££¨¹Ø½Ú½Ç£©
+%% along pathè§„åˆ’ï¼Œæœºæ¢°è‡‚çš„è¾“å‡ºä½å§¿è½¨è¿¹ï¼ˆå…³èŠ‚è§’ï¼‰
 
 function [result] = output_multiSeg()
-    result.spacenum = 0;   %¹ì¼£²ÉÑù¶ÎÊı
-    result.trajectory = []; %¹ì¼£Êı¾İ
-    result.segment_times = []; %Ã¿¶Î¹ì¼£µÄÊ±¼ä¼ä¸ô
-    result.segment_curtimes = []; %ÀÛ»ıµÄÊ±¼ä¼ä¸ô(Ê±¿Ì)
+    result.spacenum = 0;   %è½¨è¿¹é‡‡æ ·æ®µæ•°
+    result.trajectory = []; %è½¨è¿¹æ•°æ®
+    result.segment_times = []; %æ¯æ®µè½¨è¿¹çš„æ—¶é—´é—´éš”
+    result.segment_curtimes = []; %ç´¯ç§¯çš„æ—¶é—´é—´éš”(æ—¶åˆ»)
 end
 

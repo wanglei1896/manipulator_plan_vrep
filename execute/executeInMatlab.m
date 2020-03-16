@@ -1,20 +1,20 @@
-%ÓÃÓÚÔÚmatlab»·¾³ÄÚ²¿Ä£Äâ»úĞµ±ÛµÄÔËĞĞ£¬²¢×÷Õ¹Ê¾
-%Ö÷ÒªÊ¹ÓÃmatlab robotic toolboxÊµÏÖ
+%ç”¨äºåœ¨matlabç¯å¢ƒå†…éƒ¨æ¨¡æ‹Ÿæœºæ¢°è‡‚çš„è¿è¡Œï¼Œå¹¶ä½œå±•ç¤º
+%ä¸»è¦ä½¿ç”¨matlab robotic toolboxå®ç°
 % 
 global model outputData
 
 
-%Ê¹ÓÃtoolbox×Ô´øµÄµãµ½µã¹ì¼£
+%ä½¿ç”¨toolboxè‡ªå¸¦çš„ç‚¹åˆ°ç‚¹è½¨è¿¹
 %outputData_bench.trajectory = jtraj(inputData.qStart,inputData.qFinal,20)';
 
 
-%»úĞµ±ÛÔËĞĞ
+%æœºæ¢°è‡‚è¿è¡Œ
 model.plot(outputData.trajectory(:,1:11)','trail',{'r'});
 
 figure,
 plotJoint_Time(outputData);
 
-%¹Ø½ÚÔË¶¯Í¼
+%å…³èŠ‚è¿åŠ¨å›¾
 function plotJoint_Time(data)
     segnum = length(data.segment_times);
     spacePerSeg=floor(data.spacenum/segnum);
@@ -28,7 +28,7 @@ function plotJoint_Time(data)
     legend joint1 joint2 joint3 joint4 joint5 joint6
     hold on,
     grid on,
-    xticks(data.segment_curtimes) %ÏÔÊ¾ÖØÒªÖ¸Ê¾Ïß
-    yticks(-2*pi:pi/2:2*pi) %Í¬ÉÏ
+    xticks(data.segment_curtimes) %æ˜¾ç¤ºé‡è¦æŒ‡ç¤ºçº¿
+    yticks(-2*pi:pi/2:2*pi) %åŒä¸Š
     yticklabels({'-2\pi','-1.5\pi','-\pi','-0.5\pi','0','0.5\pi','\pi','1.5\pi','2\pi'})
 end

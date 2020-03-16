@@ -1,18 +1,18 @@
-%% ÔÚmatlab±¾µØ³õÊ¼»¯¸÷along path¹æ»®Êı¾İ
+%% åœ¨matlabæœ¬åœ°åˆå§‹åŒ–å„along pathè§„åˆ’æ•°æ®
 global  outputData ...
         inputData ...
-        optimLog ...       %ÓÅ»¯ÈÕÖ¾£¬Ëã·¨ÓÅ»¯¹ı³ÌÖĞ²úÉúµÄĞÅÏ¢£¨ÓÃÓÚ·ÖÎö£©
-        model           %»úĞµ±ÛµÄÔË¶¯Ñ§Ä£ĞÍ
+        optimLog ...       %ä¼˜åŒ–æ—¥å¿—ï¼Œç®—æ³•ä¼˜åŒ–è¿‡ç¨‹ä¸­äº§ç”Ÿçš„ä¿¡æ¯ï¼ˆç”¨äºåˆ†æï¼‰
+        model           %æœºæ¢°è‡‚çš„è¿åŠ¨å­¦æ¨¡å‹
 
-%%% ³õÊ¼»¯
+%%% åˆå§‹åŒ–
 model = model_ur5();
-optimLog = optimLog_ap(2);   %ÓÅ»¯ÓĞ¼¸¸ö×é
-inputData = input_ap([0.3, 0.6;    %ÊäÈëµÄÂ·¾¶
+optimLog = optimLog_ap(2);   %ä¼˜åŒ–æœ‰å‡ ä¸ªç»„
+inputData = input_ap([0.3, 0.6;    %è¾“å…¥çš„è·¯å¾„
                       0.4,   0;
-                        0,   0], optimLog.group_num*10); %ÊäÈëÂ·¾¶¹æ·¶»¯ºóµÄ²ÉÑù¶ÎÊı
+                        0,   0], optimLog.group_num*10); %è¾“å…¥è·¯å¾„è§„èŒƒåŒ–åçš„é‡‡æ ·æ®µæ•°
 outputData = output_multiSeg();
 
-%%% Ä¬ÈÏ
+%%% é»˜è®¤
 inputData.pStart = eye(4);
 inputData.pStart(1:3,4) = inputData.path(:,1);
 inputData.qStart = model.ikunc(inputData.pStart);

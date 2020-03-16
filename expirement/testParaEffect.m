@@ -1,4 +1,4 @@
-% 用于探索轨迹编码参数的改变对生成的轨迹及其代价函数值的影响
+% 鐢ㄤ簬鎺㈢储杞ㄨ抗缂栫爜鍙傛暟鐨勬敼鍙樺鐢熸垚鐨勮建杩瑰強鍏朵唬浠峰嚱鏁板�肩殑褰卞搷
 function testParaEffect()
 
 paraSample = rand(1,14);

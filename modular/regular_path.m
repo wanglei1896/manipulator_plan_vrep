@@ -1,14 +1,14 @@
-% ´Ëº¯ÊıÓÃÓÚ¹æ·¶»¯Â·¾¶µãĞòÁĞ£¬Ê¹¸÷µã¼ä±äµÃµÈÂ·³Ì
-% ÊäÈë£ºÈÎÒâÂ·¾¶ĞòÁĞ, ÒÔ¼°²ÉÑù¶ÎÊı£¨Êä³öÊÇ¶àÉÙ¶ÎµÄÂ·¾¶£©
-% Êä³ö£º¹æ·¶»¯ºóµÄµÈÂ·³ÌÂ·¾¶ĞòÁĞ£¬Á½µã¼äµÄÂ·³ÌÖ¸µÄÊÇÑØÔ­ÓĞÂ·¾¶ĞòÁĞÁ¬³ÉµÄÕÛÏß×ßµÄÂ·³Ì
-% Ìõ¼ş1£ºÂ·¾¶Êı¾İ½á¹¹¸ñÊ½£º[xseq;yseq;zseq], Ò²¿ÉÒÔÊÇ¶şÎ¬([xseq;yseq])»òÒ»Î¬
+% æ­¤å‡½æ•°ç”¨äºè§„èŒƒåŒ–è·¯å¾„ç‚¹åºåˆ—ï¼Œä½¿å„ç‚¹é—´å˜å¾—ç­‰è·¯ç¨‹
+% è¾“å…¥ï¼šä»»æ„è·¯å¾„åºåˆ—, ä»¥åŠé‡‡æ ·æ®µæ•°ï¼ˆè¾“å‡ºæ˜¯å¤šå°‘æ®µçš„è·¯å¾„ï¼‰
+% è¾“å‡ºï¼šè§„èŒƒåŒ–åçš„ç­‰è·¯ç¨‹è·¯å¾„åºåˆ—ï¼Œä¸¤ç‚¹é—´çš„è·¯ç¨‹æŒ‡çš„æ˜¯æ²¿åŸæœ‰è·¯å¾„åºåˆ—è¿æˆçš„æŠ˜çº¿èµ°çš„è·¯ç¨‹
+% æ¡ä»¶1ï¼šè·¯å¾„æ•°æ®ç»“æ„æ ¼å¼ï¼š[xseq;yseq;zseq], ä¹Ÿå¯ä»¥æ˜¯äºŒç»´([xseq;yseq])æˆ–ä¸€ç»´
 % 
 
 function result = regular_path(path, spacenum)
     nPoint = size(path,2);
     delta_vecs = diff(path')';
-    lens = zeros(1,nPoint-1); %Ã¿¶ÎµÄ³¤¶È
-    lenCur = zeros(1,nPoint); %Ã¿¶ÎµÄÀÛ»ı³¤¶È
+    lens = zeros(1,nPoint-1); %æ¯æ®µçš„é•¿åº¦
+    lenCur = zeros(1,nPoint); %æ¯æ®µçš„ç´¯ç§¯é•¿åº¦
     for ii=2:nPoint
         lens(ii-1) = norm(delta_vecs(:,ii-1));
         lenCur(ii) = lenCur(ii-1)+lens(ii-1); 
@@ -16,26 +16,26 @@ function result = regular_path(path, spacenum)
     result = zeros(size(path,1),spacenum+1);
     fast();
     
-    %% ÉèÄ³Ò»ÕÛÏß¶ÎÊÇÓÉÒ»µãpÔÚ²ÎÊıalphaµÄ±ä»¯ÏÂµÄÔË¶¯³öÀ´µÄ£¬alphaÊôÓÚ[0,1]
-    % ¸ø¶¨Ò»alphaÖµ£¬ÇópµãÎ»ÖÃ
+    %% è®¾æŸä¸€æŠ˜çº¿æ®µæ˜¯ç”±ä¸€ç‚¹påœ¨å‚æ•°alphaçš„å˜åŒ–ä¸‹çš„è¿åŠ¨å‡ºæ¥çš„ï¼Œalphaå±äº[0,1]
+    % ç»™å®šä¸€alphaå€¼ï¼Œæ±‚pç‚¹ä½ç½®
     function point = getPinAlpha(alpha)
         
     end
     
-    %% ÉèÄ³Ò»ÕÛÏß¶ÎÊÇÓÉÒ»µãp£¨´ÓÆğµãÖÁÖÕµã£¬²»×ß»ØÍ·Â·£©ÔË¶¯³öÀ´µÄ
-    % Çóµ±ÔË¶¯Â·³ÌÎªdistanceÊ±pµãµÄÎ»ÖÃ
+    %% è®¾æŸä¸€æŠ˜çº¿æ®µæ˜¯ç”±ä¸€ç‚¹pï¼ˆä»èµ·ç‚¹è‡³ç»ˆç‚¹ï¼Œä¸èµ°å›å¤´è·¯ï¼‰è¿åŠ¨å‡ºæ¥çš„
+    % æ±‚å½“è¿åŠ¨è·¯ç¨‹ä¸ºdistanceæ—¶pç‚¹çš„ä½ç½®
     function point = getPinDistance(distance)
-        %Îª¼õÇá¼ÆËãÁ¿£¬ÓÃÏòÁ¿µÄ1·¶Êı×÷³¤¶È¶ÈÁ¿
+        %ä¸ºå‡è½»è®¡ç®—é‡ï¼Œç”¨å‘é‡çš„1èŒƒæ•°ä½œé•¿åº¦åº¦é‡
         
     end
 
-    %% ¾¡¿ÉÄÜ¿ìµÄËã·¨
+    %% å°½å¯èƒ½å¿«çš„ç®—æ³•
     function fast()
         inter_odo = lenCur(nPoint)/spacenum;
         result(:,1) = path(:,1);
-        result_i = 1; %resultÊı×éµÄÓÎ±ê,Ö¸Ïò×îºóÌí¼ÓµÄÔªËØµÄÎ»ÖÃ
+        result_i = 1; %resultæ•°ç»„çš„æ¸¸æ ‡,æŒ‡å‘æœ€åæ·»åŠ çš„å…ƒç´ çš„ä½ç½®
         rest = 0;
-        for i = 1:nPoint-1 %iÓÎ±ê±íÊ¾pathÖĞµÄµÚ¼¸¶Î
+        for i = 1:nPoint-1 %iæ¸¸æ ‡è¡¨ç¤ºpathä¸­çš„ç¬¬å‡ æ®µ
             len = lens(i)+rest;
             if len>inter_odo
                 b=inter_odo-rest;
@@ -58,7 +58,7 @@ function result = regular_path(path, spacenum)
                 rest=len;
             end
         end
-        if result_i==spacenum  %ÉÙÒ»¸öµã
+        if result_i==spacenum  %å°‘ä¸€ä¸ªç‚¹
             result(:,end) = path(:,end);
         end
     end

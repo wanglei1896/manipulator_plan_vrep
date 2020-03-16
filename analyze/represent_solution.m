@@ -1,19 +1,19 @@
-%% ÓÃÓÚÍ¼ĞÎ»¯Õ¹Ê¾ÓÅ»¯Ëã·¨µÄÓÅ»¯¹ı³Ì
+%% ç”¨äºå›¾å½¢åŒ–å±•ç¤ºä¼˜åŒ–ç®—æ³•çš„ä¼˜åŒ–è¿‡ç¨‹
 global optimLog
 
 if ~exist('histo_t1_t2','var')
-    disp('¿ªÊ¼¼ÆËã'), tic,
+    disp('å¼€å§‹è®¡ç®—'), tic,
     histo_t1_t2 = calHisto_t1_t2();
-    toc, disp('¼ÆËã½áÊø')
+    toc, disp('è®¡ç®—ç»“æŸ')
 end
 
-% ×îÓÅÖµËæµü´ú´ÎÊı±ä»¯
+% æœ€ä¼˜å€¼éšè¿­ä»£æ¬¡æ•°å˜åŒ–
 plot(optimLog.fitness_history);
 
 figure, 
 plothisto_t1_t2(histo_t1_t2,optimLog.solution_history(:,end-1:end));
 
-% t1-t2 ÆÊÃæµÄÊÊÓ¦¶Èº¯ÊıËæµü´ú´ÎÊı±ä»¯(ÆäËüÎ¬¶ÈµÄÖµÎªµ±´ú×îÓÅ½âµÄÖµ)
+% t1-t2 å‰–é¢çš„é€‚åº”åº¦å‡½æ•°éšè¿­ä»£æ¬¡æ•°å˜åŒ–(å…¶å®ƒç»´åº¦çš„å€¼ä¸ºå½“ä»£æœ€ä¼˜è§£çš„å€¼)
 function plothisto_t1_t2(histo, actual_pos)
     %xlim([0,10]); ylim([0,10])
     global optimLog
@@ -25,9 +25,9 @@ function plothisto_t1_t2(histo, actual_pos)
     t = text(0,0,'','VerticalAlignment','top','FontSize',12);
     for i=2:length(optimLog.fitness_history)
         hold on
-        %p.XData = actual_pos(i,2)*30/10; %X×ø±êÎªt2
-        %p.YData = actual_pos(i,1)*30/10; %Y×ø±êÎªt1
-        t.String = ['µü´ú´ÎÊı£º ', num2str(i)];
+        %p.XData = actual_pos(i,2)*30/10; %Xåæ ‡ä¸ºt2
+        %p.YData = actual_pos(i,1)*30/10; %Yåæ ‡ä¸ºt1
+        t.String = ['è¿­ä»£æ¬¡æ•°ï¼š ', num2str(i)];
         h.ZData = histo.cost(:,:,i);
         colorbar;
         axis manual
@@ -36,7 +36,7 @@ function plothisto_t1_t2(histo, actual_pos)
     end
 end
 
-% ¼ÆËãº¯ÊıÔÚt1-t2ÆÊÃæµÄÈÈµãÍ¼,ĞèÒªÓÃµ½´ú¼Ûº¯Êı
+% è®¡ç®—å‡½æ•°åœ¨t1-t2å‰–é¢çš„çƒ­ç‚¹å›¾,éœ€è¦ç”¨åˆ°ä»£ä»·å‡½æ•°
 function result = calHisto_t1_t2()
     global optimLog fitnessFun
     dividenum = 30;

@@ -1,4 +1,4 @@
-%% along path¹æ»®µÄÓÅ»¯ÈÕÖ¾
+%% along pathè§„åˆ’çš„ä¼˜åŒ–æ—¥å¿—
 function result = optimLog_ap(group_num)
     result.group_num = group_num;
     for i=1:result.group_num

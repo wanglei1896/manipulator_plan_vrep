@@ -1,4 +1,4 @@
-%% 点对点规划的优化日志
+%% 鐐瑰鐐硅鍒掔殑浼樺寲鏃ュ織
 function [result] = optimLog_p2p()
     result.fitness_history = [];
     result.solution_history = [];

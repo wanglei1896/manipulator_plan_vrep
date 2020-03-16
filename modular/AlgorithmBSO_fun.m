@@ -1,33 +1,33 @@
-%ALGORITHMBSO_FUN ´Ë´¦ÏÔÊ¾ÓÐ¹Ø´Ëº¯ÊýµÄÕªÒª
-%       AlgorithmBSOµÄº¯Êý·â×°°æ±¾
-%       ½â¾ö»Øµ÷º¯ÊýfitnessfunµÄhandle×÷ÓÃÓòÎÊÌâ
+%ALGORITHMBSO_FUN æ­¤å¤„æ˜¾ç¤ºæœ‰å…³æ­¤å‡½æ•°çš„æ‘˜è¦
+%       AlgorithmBSOçš„å‡½æ•°å°è£…ç‰ˆæœ¬
+%       è§£å†³å›žè°ƒå‡½æ•°fitnessfunçš„handleä½œç”¨åŸŸé—®é¢˜
 
-% ·µ»ØµÄfitness_historyÓësolution_history¶¼ÊÇÃ¿´Îµü´úÖÐµÄÖÖÈº×îÓÅ¸öÌåÊý¾Ý
+% è¿”å›žçš„fitness_historyä¸Žsolution_historyéƒ½æ˜¯æ¯æ¬¡è¿­ä»£ä¸­çš„ç§ç¾¤æœ€ä¼˜ä¸ªä½“æ•°æ®
 function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_fun(sizepop,iteration_num,solution_bound,fitnessfun)
     %% properties
     obj_sizepop=50;
     obj_iteration_num=100;
     obj_precision=0.001;
     
-    obj_decay_rate=0.98; %Ë¥¼õÂÊ
+    obj_decay_rate=0.98; %è¡°å‡çŽ‡
     obj_ante_dis=3; %antenna distance
-    obj_step_lenth=1; %ÌìÅ£µÄ²½³¤
-                     %Ñ§Ï°Òò×Ó
+    obj_step_lenth=1; %å¤©ç‰›çš„æ­¥é•¿
+                     %å­¦ä¹ å› å­
     obj_c1=1.49445;
     obj_c2=1.49445;
-    %±ÈÀýÒò×Ó£¬¾ö¶¨PSOÖÐµÄËÙ¶ÈÓëBASÖÐ²½³¤µÄ»ìºÏ±ÈÀý
+    %æ¯”ä¾‹å› å­ï¼Œå†³å®šPSOä¸­çš„é€Ÿåº¦ä¸ŽBASä¸­æ­¥é•¿çš„æ··åˆæ¯”ä¾‹
     obj_lamda=0.2;
-    %ÌìÅ£ËÙ¶ÈÏÞÖÆ
+    %å¤©ç‰›é€Ÿåº¦é™åˆ¶
     obj_Vmax = 1;
     obj_Vmin = -1;
     
 %     obj_pop;
-%     obj_pop_step;  %ÌìÅ£ÈºÔ­Ê¼²½
-%     obj_pop_v; %ÌìÅ£ÈºÔöÁ¿²½
+%     obj_pop_step;  %å¤©ç‰›ç¾¤åŽŸå§‹æ­¥
+%     obj_pop_v; %å¤©ç‰›ç¾¤å¢žé‡æ­¥
 %     obj_pop_fitness;
-%     obj_gbest; %ÖÖÈº¸öÌå¼«Öµµã
+%     obj_gbest; %ç§ç¾¤ä¸ªä½“æžå€¼ç‚¹
 %     obj_gbest_fitness;
-%     obj_zbest; %ÖÖÈºÈ«Ìå¼«Öµµã
+%     obj_zbest; %ç§ç¾¤å…¨ä½“æžå€¼ç‚¹
 %     obj_zbest_fitness;
     obj_sizepop = sizepop;
     obj_iteration_num = iteration_num;
@@ -40,14 +40,14 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
     
     %% main procedure
     tic
-    % µü´úÑ°ÓÅ
+    % è¿­ä»£å¯»ä¼˜
     for ii=1:obj_iteration_num
         updatePop();
         updateFitness();
-        %²½³¤Ë¥¼õ
+        %æ­¥é•¿è¡°å‡
         obj_ante_dis = obj_ante_dis * obj_decay_rate + obj_precision;
         obj_step_lenth = obj_step_lenth * obj_decay_rate;
-        % ´æ´¢µ±Ç°µü´ú×îÓÅ½á¹û
+        % å­˜å‚¨å½“å‰è¿­ä»£æœ€ä¼˜ç»“æžœ
         [best_fit,best_index]=max(obj_pop_fitness);
         fitness_history(ii)=1/best_fit;
         bsol=obj_pop(best_index,:);
@@ -60,7 +60,7 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
     function dimension = obj_dimension()
         dimension = size(obj_solution_bound,1);
     end
-    % ¼ÆËãÖÖÈºËùÓÐ¸öÌåµÄÊÊÓ¦º¯ÊýÖµ£¨fitnessfunµÄ°ü×°£©
+    % è®¡ç®—ç§ç¾¤æ‰€æœ‰ä¸ªä½“çš„é€‚åº”å‡½æ•°å€¼ï¼ˆfitnessfunçš„åŒ…è£…ï¼‰
     function pop_fitness = obj_evalFitness(pop)
         if nargin == 0
             pop=obj_pop;
@@ -73,7 +73,7 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         end
         %pop_fitness = [ones(length(pop),1) pop pop.^2] * [1 1 -1]';
     end
-    % Éú³É³õÊ¼ÌìÅ£ÈººÍÌìÅ£²½
+    % ç”Ÿæˆåˆå§‹å¤©ç‰›ç¾¤å’Œå¤©ç‰›æ­¥
     function [obj_pop, obj_pop_step, obj_pop_v] = initialPop()
         %obj_solution_bound = [-10, 10];
         obj_pop = (ones(obj_sizepop,1)*(obj_solution_bound(:,2)-obj_solution_bound(:,1))')...
@@ -81,7 +81,7 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         obj_pop_step = rands(obj_sizepop,obj_dimension); 
         obj_pop_v = rands(obj_sizepop,obj_dimension); 
     end
-    % Éú³É³õÊ¼¸öÌå¼«ÖµºÍÈºÌå¼«Öµ
+    % ç”Ÿæˆåˆå§‹ä¸ªä½“æžå€¼å’Œç¾¤ä½“æžå€¼
     function [obj_pop_fitness, obj_zbest, obj_gbest, obj_gbest_fitness, obj_zbest_fitness] = initialFitness()
         obj_pop_fitness = zeros(obj_sizepop,1);
         [bestfitness, bestindex] = max(obj_pop_fitness);
@@ -92,11 +92,11 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
     end
     function updatePop()
         for j = 1:obj_sizepop
-            % ËÙ¶È¸üÐÂ
+            % é€Ÿåº¦æ›´æ–°
             obj_pop_v(j,:) = obj_pop_v(j,:) + obj_c1*rand*(obj_gbest(j,:) - obj_pop(j,:)) + obj_c2*rand*(obj_zbest - obj_pop(j,:));
             obj_pop_v(j,obj_pop_v(j,:)>obj_Vmax) = obj_Vmax;
             obj_pop_v(j,obj_pop_v(j,:)<obj_Vmin) = obj_Vmin;
-            % ²½³¤¸üÐÂ
+            % æ­¥é•¿æ›´æ–°
             dir = obj_pop_v(j,:)/(eps+norm(obj_pop_v(j,:)));
             xleft=handle_border(obj_pop(j,:)+dir*(obj_ante_dis/2));
             fleft=obj_evalFitness(xleft);
@@ -104,7 +104,7 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
             fright=obj_evalFitness(xright);
             
             obj_pop_step(j,:)=obj_step_lenth*dir*sign(fleft-fright);
-            % ÖÖÈº¸üÐÂ
+            % ç§ç¾¤æ›´æ–°
             obj_pop(j,:) = handle_border(obj_pop(j,:) + obj_lamda*obj_pop_v(j,:) + (1-obj_lamda)*obj_pop_step(j,:));
 %             max_i=find(obj_pop(j,:)>obj_solution_bound(:,2)');
 %             obj_pop(j,max_i) = obj_solution_bound(max_i,2)';
@@ -113,22 +113,22 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         end
     end
     function updateFitness()
-    % ÊÊÓ¦¶ÈÖµ¸üÐÂ
+    % é€‚åº”åº¦å€¼æ›´æ–°
         obj_pop_fitness = obj_evalFitness(obj_pop);
         for j = 1:obj_sizepop
-            % ¸öÌå×îÓÅ¸üÐÂ
+            % ä¸ªä½“æœ€ä¼˜æ›´æ–°
             if obj_pop_fitness(j) > obj_gbest_fitness(j)
                 obj_gbest(j,:) = obj_pop(j,:);
                 obj_gbest_fitness(j) = obj_pop_fitness(j);
             end
-            % ÈºÌå×îÓÅ¸üÐÂ
+            % ç¾¤ä½“æœ€ä¼˜æ›´æ–°
             if obj_pop_fitness(j) > obj_zbest_fitness
                 obj_zbest = obj_pop(j,:);
                 obj_zbest_fitness = obj_pop_fitness(j);
             end
         end
     end
-    %±ß½ç´¦Àí
+    %è¾¹ç•Œå¤„ç†
     function outputvec = handle_border(inputvec)
         outputvec = inputvec;
         max_i=find(inputvec>obj_solution_bound(:,2)');

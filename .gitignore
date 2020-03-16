@@ -1,7 +1,11 @@
 # generate files
 **/*.asv
+
 # vrep的远程api环境
 /connectionTool/**
 
 # vrep的demo
 /vrep_examples/**
+
+# matlab robotics toolbox
+/rvctools/**

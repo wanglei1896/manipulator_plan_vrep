@@ -1,16 +1,16 @@
-%% ÔÚmatlab±¾µØ³õÊ¼»¯¸÷Êı¾İ
+%% åœ¨matlabæœ¬åœ°åˆå§‹åŒ–å„æ•°æ®
 global  outputData ...
         inputData ...
-        optimLog ...       %ÓÅ»¯ÈÕÖ¾£¬Ëã·¨ÓÅ»¯¹ı³ÌÖĞ²úÉúµÄĞÅÏ¢£¨ÓÃÓÚ·ÖÎö£©
-        model           %»úĞµ±ÛµÄÔË¶¯Ñ§Ä£ĞÍ
+        optimLog ...       %ä¼˜åŒ–æ—¥å¿—ï¼Œç®—æ³•ä¼˜åŒ–è¿‡ç¨‹ä¸­äº§ç”Ÿçš„ä¿¡æ¯ï¼ˆç”¨äºåˆ†æï¼‰
+        model           %æœºæ¢°è‡‚çš„è¿åŠ¨å­¦æ¨¡å‹
 
-%%% ³õÊ¼»¯
+%%% åˆå§‹åŒ–
 model = model_ur5();
 optimLog = optimLog_p2p();
 inputData = input_p2p();
 outputData = output_multiSeg();
 
-%%% Ä¬ÈÏ
+%%% é»˜è®¤
 inputData.pStart = [1 0 0 0.3;
                     0 1 0 0.4;
                     0 0 1 0;
