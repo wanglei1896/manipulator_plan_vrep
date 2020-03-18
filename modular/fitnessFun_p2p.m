@@ -18,16 +18,16 @@ classdef fitnessFun_p2p
             obj.alpha = manipulator_model.alpha;
         end
         
-        function fitness_value = fitnessf(obj, parameters)
+        function [fitness_value,cost_vec] = fitnessf(obj, parameters)
             % 给优化算法回调用，注意接口与其保持一致
             [status, result] = obj.convertSolutionToTrajectory(parameters);
             if status ~= 0
                 fitness_value = 1/(result*1000);
                 return;
             end
-            fitness_value = evaluateTrajectory(result);
+            [fitness_value,cost_vec] = evaluateTrajectory(result);
 
-            function evaluate_value = evaluateTrajectory(result)
+            function [evaluate_value,cost_vec] = evaluateTrajectory(result)
                 ql=result(1:6,:);
                 vl=result(7:12,:);
                 al=result(13:18,:);
@@ -62,16 +62,28 @@ classdef fitnessFun_p2p
                 dis=sqrt(dx.^2+dy.^2+dz.^2);
                 fdis=sum(dis);
                 %{
+                  fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
+                %}
+                target_path=[0.300000000000000,0.315000000000000,0.330000000000000,0.345000000000000,0.360000000000000,0.375000000000000,0.390000000000000,0.405000000000000,0.420000000000000,0.435000000000000,0.450000000000000,0.465000000000000,0.480000000000000,0.495000000000000,0.510000000000000,0.525000000000000,0.540000000000000,0.555000000000000,0.570000000000000,0.585000000000000,0.600000000000000;
+                 0.400000000000000,0.380000000000000,0.360000000000000,0.340000000000000,0.320000000000000,0.300000000000000,0.280000000000000,0.260000000000000,0.240000000000000,0.220000000000000,0.200000000000000,0.180000000000000,0.160000000000000,0.140000000000000,0.120000000000000,0.0999999999999998,0.0799999999999998,0.0599999999999998,0.0399999999999998,0.0199999999999998,0;
+                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+                regPos = regular_path(pos,size(target_path,2)-1);
+                fdt=0;
+                for delta=target_path-regPos
+                    fdt=fdt+norm(delta);
+                end
+                %{
                   time表示轨迹运动的时间
                 %}
                 time=sum(parameters(end-1:end));
-                cost_vec=[ft,fq,fdis,time];
-                cost=cost_vec*[0,0,1,0]';
+                cost_vec=[ft,fq,fdt,fdis,time];
+                cost=cost_vec*[0,0,1,1,0]';
                 evaluate_value=1/(cost+eps); %防止/0错误
             end
             function pos = fastForwardTrans(number, theta)
                 a=obj.a; d=obj.d; alpha=obj.alpha;
                 % toolbox中自带的正运动学要调用对象，太慢，这里优化一个更快的版本
+                assert(number>=0 && number<=6) %仅适用于6关节机械臂
                 % number表示关节编号，0-5号关节，6号末端
                 if number == 0
                     pos = [0 0 0]'; return;

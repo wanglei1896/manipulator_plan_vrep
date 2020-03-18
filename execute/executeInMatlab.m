@@ -9,7 +9,7 @@ global model outputData
 
 
 %机械臂运行
-model.plot(outputData.trajectory(:,1:11)','trail',{'r'});
+model.plot(outputData.trajectory(:,:)','trail',{'r'});
 
 figure,
 plotJoint_Time(outputData);

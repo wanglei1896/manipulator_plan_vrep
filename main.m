@@ -1,10 +1,12 @@
-%主流程控制
+% 主流程控制
+
 %{
 global  outputData ...
         inputData ...
         optimLog ...       %优化日志，算法优化过程中产生的信息（用于分析）
         model           %机械臂的运动学模型
 %}
+
 %% 运行环境
 ProjectPath = fileparts(mfilename('fullpath'));
 addpath(fullfile(ProjectPath, 'initial')); % 此文件夹下放规划的初始化脚本
@@ -17,12 +19,14 @@ addpath(fullfile(ProjectPath, 'rvctools')); % 机器人库
 startup_rvc; % 配置机器人库环境
 
 %% 配置、环境数据获取
-initial_native_ap;
+% initial_native_ap;
+initial_native_p2p
 %%% 生成
 %initial_fromVrep;
 
 %% 规划过程
-planner_ap;
+% planner_ap;
+planner_p2p;
 
 %% 在环境中执行规划出的位姿/轨迹
 %executeInVrep;

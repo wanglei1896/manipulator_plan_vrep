@@ -3,6 +3,13 @@
 global outputData inputData optimLog model fitnessFun
 %q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%初始关节角
 
+%% optimLog更新，因此重置受其影响的变量
+% 下面的值由于计算费时，先清空，再在analyze/reprsent_ap.m中计算
+optimLog.path_history=[];
+optimLog.regPath_history=[];
+optimLog.sum.fitness_history=[];
+optimLog.qTable_history=[];
+
 %% 配置代价函数
 % 轨迹编码
 fitnessFun = fitnessFun_ap(model);
@@ -18,20 +25,16 @@ fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点
 fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
+optimLog.qTable_history=fitnessFun.qTable;
 
 %% 主规划过程
 main();
-
-%% optimLog更新，因此重置受其影响的变量
-if exist('histo_t1_t2','var')
-    clear histo_t1_t2
-end
 
 function main()
 global inputData outputData optimLog fitnessFun
     %% 算法初始化
     sizepop = 10;
-    iternum = 50;
+    iternum = 100;
     groupnum = optimLog.group_num;
 
     %% 调用算法规划
@@ -64,6 +67,7 @@ global inputData outputData optimLog fitnessFun
     assert(size(outputData.trajectory,2)==1) %trajectory中角度应存在每列上
     outputData.segment_curtimes(1) = 0;
     for i=1:groupnum
+        fitnessFun.serial_number = i;
         last_solution = optimLog.group(i).solution_history(end,:);
         [last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         outputData.segment_times(i) = last_solution(13);
@@ -82,6 +86,7 @@ global optimLog
               0 0 0 1];
     pFinal(1:3,4) = positionFinal;
     qFinal = model.ikunc(pFinal);
+    [qStart,qFinal] = regular_JointPos(qStart,qFinal);
     [q, vq, aq] = jtraj(qStart,qFinal,optimLog.group_num+1);
     qTable.q = q'; qTable.vq = vq'; qTable.aq = aq';
     assert(size(qTable.q,1)==6);

@@ -37,7 +37,7 @@ iternum = 100;
 %% 调用算法规划
 disp('planning start.');
 
-[optimLog.fitness_history, optimLog.solution_history, optimization_time] ...
+[optimLog.fitness_history, optimLog.fitvec_history, optimLog.solution_history, optimization_time] ...
     = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
 last_solution = optimLog.solution_history(end,:);
 outputData.segment_times = last_solution(end-1:end);

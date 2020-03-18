@@ -1,4 +1,4 @@
-%% 用于图形化展示优化算法的优化过程
+%% p2p规划，用于图形化展示优化算法优化过程中代价函数的变化
 global optimLog
 
 if ~exist('histo_t1_t2','var')

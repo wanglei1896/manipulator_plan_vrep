@@ -3,7 +3,8 @@
 %       解决回调函数fitnessfun的handle作用域问题
 
 % 返回的fitness_history与solution_history都是每次迭代中的种群最优个体数据
-function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_fun(sizepop,iteration_num,solution_bound,fitnessfun)
+% fitvec_history是多目标优化时各指标分量向量
+function [fitness_history, fitvec_history, solution_history, optimization_time] = AlgorithmBSO_fun(sizepop,iteration_num,solution_bound,fitnessfun)
     %% properties
     obj_sizepop=50;
     obj_iteration_num=100;
@@ -33,9 +34,10 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
     obj_iteration_num = iteration_num;
     obj_solution_bound = solution_bound;
     [obj_pop, obj_pop_step, obj_pop_v] = initialPop();
-    [obj_pop_fitness, obj_zbest, obj_gbest, obj_gbest_fitness, obj_zbest_fitness] = initialFitness();
+    [obj_pop_fitness,obj_pop_fitvec, obj_zbest, obj_gbest, obj_gbest_fitness, obj_zbest_fitness] = initialFitness();
     
     fitness_history = zeros(obj_iteration_num, 1);
+    fitvec_history = [];
     solution_history = zeros(obj_iteration_num, obj_dimension);
     
     %% main procedure
@@ -50,6 +52,7 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         % 存储当前迭代最优结果
         [best_fit,best_index]=max(obj_pop_fitness);
         fitness_history(ii)=1/best_fit;
+        fitvec_history(ii,:)=obj_pop_fitvec(best_index,:);
         bsol=obj_pop(best_index,:);
         solution_history(ii,:)=bsol;
     end
@@ -61,15 +64,16 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         dimension = size(obj_solution_bound,1);
     end
     % 计算种群所有个体的适应函数值（fitnessfun的包装）
-    function pop_fitness = obj_evalFitness(pop)
+    function [pop_fitness, pop_fitvec] = obj_evalFitness(pop)
         if nargin == 0
             pop=obj_pop;
         end
         pop_fitness=zeros(size(pop,1),1);
+        pop_fitvec=[];
         for i=1:size(pop,1)
             %assert(pop(i,end-1)>0 && pop(i,end)>0);
             assert(pop(i,end)>0)
-            pop_fitness(i) = fitnessfun(pop(i,:));
+            [pop_fitness(i), pop_fitvec(i,:)]= fitnessfun(pop(i,:));
         end
         %pop_fitness = [ones(length(pop),1) pop pop.^2] * [1 1 -1]';
     end
@@ -82,8 +86,9 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
         obj_pop_v = rands(obj_sizepop,obj_dimension); 
     end
     % 生成初始个体极值和群体极值
-    function [obj_pop_fitness, obj_zbest, obj_gbest, obj_gbest_fitness, obj_zbest_fitness] = initialFitness()
+    function [obj_pop_fitness, obj_pop_fitvec, obj_zbest, obj_gbest, obj_gbest_fitness, obj_zbest_fitness] = initialFitness()
         obj_pop_fitness = zeros(obj_sizepop,1);
+        obj_pop_fitvec=[];
         [bestfitness, bestindex] = max(obj_pop_fitness);
         obj_zbest = obj_pop(bestindex,:);  
         obj_gbest = obj_pop;
@@ -114,7 +119,7 @@ function [fitness_history, solution_history, optimization_time] = AlgorithmBSO_f
     end
     function updateFitness()
     % 适应度值更新
-        obj_pop_fitness = obj_evalFitness(obj_pop);
+        [obj_pop_fitness, obj_pop_fitvec] = obj_evalFitness(obj_pop);
         for j = 1:obj_sizepop
             % 个体最优更新
             if obj_pop_fitness(j) > obj_gbest_fitness(j)
