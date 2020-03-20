@@ -1,2 +1,2 @@
-* 展示优化过程时优化到的路径高亮
-* path_history的存储
+* DONE 展示优化过程时优化到的路径高亮
+* DONE path_history的存储

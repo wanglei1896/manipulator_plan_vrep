@@ -30,7 +30,7 @@ actualPosition=zeros(3,iter);
 % 输出的关节运动序列
 outputjointValue=zeros(6,iter);
 %}
-sizepop = 10;
+sizepop = 20;
 iternum = 100;
 
 

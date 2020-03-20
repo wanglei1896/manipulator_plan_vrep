@@ -4,7 +4,7 @@ classdef fitnessFun_p2p
     
     properties
         % 访问全局变量太慢，所以存在这里作为私有数据
-        d; a; alpha; joint_num; % 机械臂的相关参数
+        d; a; alpha; base; joint_num; % 机械臂的相关参数
         spacenum; % 生成轨迹段数
         qStart; qFinal;
         
@@ -16,6 +16,7 @@ classdef fitnessFun_p2p
             obj.d = manipulator_model.d;
             obj.a = manipulator_model.a;
             obj.alpha = manipulator_model.alpha;
+            obj.base = manipulator_model.base.t;
         end
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
@@ -62,60 +63,49 @@ classdef fitnessFun_p2p
                 dis=sqrt(dx.^2+dy.^2+dz.^2);
                 fdis=sum(dis);
                 %{
-                  fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
-                %}
-                target_path=[0.300000000000000,0.315000000000000,0.330000000000000,0.345000000000000,0.360000000000000,0.375000000000000,0.390000000000000,0.405000000000000,0.420000000000000,0.435000000000000,0.450000000000000,0.465000000000000,0.480000000000000,0.495000000000000,0.510000000000000,0.525000000000000,0.540000000000000,0.555000000000000,0.570000000000000,0.585000000000000,0.600000000000000;
-                 0.400000000000000,0.380000000000000,0.360000000000000,0.340000000000000,0.320000000000000,0.300000000000000,0.280000000000000,0.260000000000000,0.240000000000000,0.220000000000000,0.200000000000000,0.180000000000000,0.160000000000000,0.140000000000000,0.120000000000000,0.0999999999999998,0.0799999999999998,0.0599999999999998,0.0399999999999998,0.0199999999999998,0;
-                 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-                regPos = regular_path(pos,size(target_path,2)-1);
-                fdt=0;
-                for delta=target_path-regPos
-                    fdt=fdt+norm(delta);
-                end
-                %{
                   time表示轨迹运动的时间
                 %}
                 time=sum(parameters(end-1:end));
-                cost_vec=[ft,fq,fdt,fdis,time];
-                cost=cost_vec*[0,0,1,1,0]';
+                cost_vec=[ft,fq,fdis,time];
+                cost=cost_vec*[0,0,1,0]';
                 evaluate_value=1/(cost+eps); %防止/0错误
             end
             function pos = fastForwardTrans(number, theta)
-                a=obj.a; d=obj.d; alpha=obj.alpha;
+                a=obj.a; d=obj.d; alpha=obj.alpha; base=obj.base;
                 % toolbox中自带的正运动学要调用对象，太慢，这里优化一个更快的版本
                 assert(number>=0 && number<=6) %仅适用于6关节机械臂
                 % number表示关节编号，0-5号关节，6号末端
                 if number == 0
-                    pos = [0 0 0]'; return;
+                    pos = base+[0 0 0]'; return;
                 end
                 T01=T_para(theta(1),d(1),a(1),alpha(1));
                 if number == 1
-                    pos = T01(1:3,4); return;
+                    pos = base+T01(1:3,4); return;
                 end
                 T12=T_para(theta(2),d(2),a(2),alpha(2));
                 T02=T01*T12;
                 if number == 2
-                    pos = T02(1:3,4); return;
+                    pos = base+T02(1:3,4); return;
                 end
                 T23=T_para(theta(3),d(3),a(3),alpha(3));
                 T03=T02*T23;
                 if number == 3
-                    pos = T03(1:3,4); return;
+                    pos = base+T03(1:3,4); return;
                 end
                 T34=T_para(theta(4),d(4),a(4),alpha(4));
                 T04=T03*T34;
                 if number == 4
-                    pos = T04(1:3,4); return;
+                    pos = base+T04(1:3,4); return;
                 end
                 T45=T_para(theta(5),d(5),a(5),alpha(5));
                 T05=T04*T45;
                 if number == 5
-                    pos = T05(1:3,4); return;
+                    pos = base+T05(1:3,4); return;
                 end
                 T56=T_para(theta(6),d(6),a(6),alpha(6));
                 T06=T05*T56;
                 if number == 6
-                    pos = T06(1:3,4); return;
+                    pos = base+T06(1:3,4); return;
                 end
                 %positions=[[0 0 0]', T01(1:3,4), T02(1:3,4), T03(1:3,4), T04(1:3,4), T05(1:3,4), T06(1:3,4)];
                 %pos = positions(:,number+1);

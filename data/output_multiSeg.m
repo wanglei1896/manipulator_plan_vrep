@@ -5,5 +5,6 @@ function [result] = output_multiSeg()
     result.trajectory = []; %轨迹数据
     result.segment_times = []; %每段轨迹的时间间隔
     result.segment_curtimes = []; %累积的时间间隔(时刻)
+    result.endPath=[];
 end
 

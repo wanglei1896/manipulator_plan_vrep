@@ -16,8 +16,8 @@ function jtraj = genTraj()
         traj(1:3,4,i)=[sx(i);sy(i);sz(i)];
         jtraj(:,i)=model.ikine(traj(:,:,i));
     end
-    disp([sx(16),sy(16),sz(16)])
-    disp(traj(:,16))
     disp([sx(17),sy(17),sz(17)])
-    disp(traj(:,17))
+    disp(jtraj(:,17))
+    disp([sx(18),sy(18),sz(18)])
+    disp(jtraj(:,18))
 end

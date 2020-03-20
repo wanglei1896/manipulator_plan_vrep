@@ -11,11 +11,11 @@ inputData = input_p2p();
 outputData = output_multiSeg();
 
 %%% 默认
-inputData.pStart = [1 0 0 0.3;
-                    0 1 0 0.4;
+inputData.pStart = [1 0 0 0.8;
+                    0 1 0 0;
                     0 0 1 0;
                     0 0 0 1];
-inputData.pFinal = [1 0 0 0.6;
+inputData.pFinal = [1 0 0 0.2;
                     0 1 0 0;
                     0 0 1 0;
                     0 0 0 1];

@@ -6,10 +6,12 @@ global optimLog
 if isequal(optimLog.path_history,[])
     calculateHistoy();
 end
-
-plot(optimLog.group(1).fitness_history);
+plot([optimLog.group(1).fitness_history, optimLog.group(2).fitness_history])
+legend group1 group2
 figure,
-plot(optimLog.group(2).fitness_history);
+plot(optimLog.group(1).fitvec_history(:,6:end));
+figure,
+plot(optimLog.group(2).fitvec_history(:,6:end));
 figure,
 plot(optimLog.sum.fitness_history);
 
@@ -22,7 +24,7 @@ function plotOptimHistory()
     ni=length(optimLog.group(1).fitness_history);
     ng=optimLog.group_num;
     for i=1:(2*ni)
-        plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:))
+        plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'k')
         hold on
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'rx')
         for j=1:ng
@@ -45,13 +47,16 @@ function plotOptimHistory()
         text(-1,-1,['iteration times: ', num2str(i)],'VerticalAlignment','top','FontSize',12);
         hold off
         axis([-1,1,-1,1,-1,1])
+        if i==1
+            disp('');
+        end
         pause(0.1)
     end
 end
 
 % 通过optimLog里各组的solutionhistory重新计算还原出每次迭代时的qTable
 function calculateHistoy()
-    global optimLog fitnessFun
+    global optimLog fitnessFun outputData
     n = optimLog.group_num;
     ni = length(optimLog.group(1).fitness_history);  %迭代次数
     qTable_initial = optimLog.qTable_history(1);
@@ -113,4 +118,10 @@ function calculateHistoy()
         optimLog.sum.fitness_history(i)=sum;
     end
     toc
+    endPath=optimLog.path_history(:,1,1,end);
+    for i=1:n
+        path=optimLog.path_history(:,:,i,end);
+        endPath=[endPath,path(:,2:end)];
+    end
+    outputData.endPath=endPath;
 end

@@ -20,16 +20,16 @@ classdef fitnessFun_ap
             obj.base = manipulator_model.base.t;
         end
         
-        function fitness_value = fitnessf(obj, parameters)
+        function [fitness_value,cost_vec] = fitnessf(obj, parameters)
             % 给优化算法回调用，注意接口与其保持一致
             [status, result] = obj.convertSolutionToTrajectory(parameters);
             if status ~= 0
                 fitness_value = 1/(result*1000);
                 return;
             end
-            fitness_value = obj.evaluateTrajectory(result,parameters);
+            [fitness_value,cost_vec] = obj.evaluateTrajectory(result,parameters);
         end
-        function evaluate_value = evaluateTrajectory(obj,result,parameters)
+        function [evaluate_value,cost_vec] = evaluateTrajectory(obj,result,parameters)
             ql=result(1:6,:);
             vl=result(7:12,:);
             al=result(13:18,:);
@@ -60,7 +60,16 @@ classdef fitnessFun_ap
                 pos(:,i) = obj.fastForwardTrans(6, ql(:,i));
             end
             regPos = regular_path(pos,size(obj.target_path,2)-1);
-            fdt=sum(sum(abs(obj.target_path-regPos)));
+            deltas=abs(obj.target_path-regPos);
+            Pos_punishment=[];
+            for delta=deltas(:,2:end)
+                if sum(delta)>0.001
+                    Pos_punishment=[Pos_punishment,sum(delta)];
+                else
+                    Pos_punishment=[Pos_punishment,0];
+                end
+            end
+            fdt=sum(sum(deltas));
             %{
               fdis表示机械臂末端划过的轨迹长度
             %}
@@ -71,8 +80,8 @@ classdef fitnessFun_ap
               time表示轨迹运动的时间
             %}
             time=sum(parameters(end));
-            cost_vec=[ft,fq,fdt,fdis,time];
-            cost=cost_vec*[0,0,1,0,0]';
+            cost_vec=[ft,fq,fdt,fdis,time, Pos_punishment];
+            cost=cost_vec*[0,0,1,1,0, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function pos = fastForwardTrans(obj,number, theta)
