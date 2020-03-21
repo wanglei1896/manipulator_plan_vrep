@@ -16,9 +16,6 @@ fitnessFun = fitnessFun_ap(model);
 fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % q * 6
                             -pi, pi; -pi, pi;
                             -pi, pi; -pi, pi;
-                            -pi/4, pi/4; -pi/4, pi/4; % vq * 6
-                            -pi/4, pi/4; -pi/4, pi/4;
-                            -pi/4, pi/4; -pi/4, pi/4;
                             0.1, 10]; % time
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 
@@ -33,7 +30,7 @@ main();
 function main()
 global inputData outputData optimLog fitnessFun
     %% 算法初始化
-    sizepop = 10;
+    sizepop = 20;
     iternum = 50;
     groupnum = optimLog.group_num;
 
@@ -88,7 +85,7 @@ global inputData outputData optimLog fitnessFun
         fitnessFun.serial_number = i;
         last_solution = optimLog.group(i).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
-        outputData.segment_times(i) = last_solution(13);
+        outputData.segment_times(i) = last_solution(end);
         outputData.segment_curtimes(i+1) = outputData.segment_curtimes(i)+outputData.segment_times(i);
         outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; %舍弃各组的第一个点，以免重复
     end

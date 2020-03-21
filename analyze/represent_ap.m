@@ -73,7 +73,7 @@ function calculateHistoy()
                 fitnessFun.qTable.vq(:,j+1)=result(7:12,end);
                 fitnessFun.qTable.aq(:,j+1)=result(13:18,end);
             else
-                solution=[qTable_initial.q(:,j+1)',qTable_initial.vq(:,j+1)',10]; %时间默认为10
+                solution=[qTable_initial.q(:,j+1)',10]; %时间默认为10
                 [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
             end
             ql=result(1:6,:);
