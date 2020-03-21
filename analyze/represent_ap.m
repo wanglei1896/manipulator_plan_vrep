@@ -3,9 +3,9 @@
 % 
 global optimLog
 
-if isequal(optimLog.path_history,[])
+%if isequal(optimLog.path_history,[])
     calculateHistoy();
-end
+%end
 plot([optimLog.group(1).fitness_history, optimLog.group(2).fitness_history])
 legend group1 group2
 figure,
@@ -56,16 +56,24 @@ end
 
 % 通过optimLog里各组的solutionhistory重新计算还原出每次迭代时的qTable
 function calculateHistoy()
-    global optimLog fitnessFun outputData
+    global optimLog fitnessFun outputData inputData
     n = optimLog.group_num;
     ni = length(optimLog.group(1).fitness_history);  %迭代次数
     qTable_initial = optimLog.qTable_history(1);
+    spacePerGroup = ceil(inputData.spacenum/n);
+    remain = mod(inputData.spacenum,n);
     tic
     for i=1:ni
         fitnessFun.qTable=qTable_initial;
         sum=0;
         for j=1:n
             fitnessFun.serial_number=j;
+            if j==n && remain>0
+                path_index = (inputData.spacenum-remain+1):inputData.spacenum;
+            else
+                path_index = (1:(spacePerGroup+1))+(j-1)*spacePerGroup;
+            end
+            fitnessFun.target_path=inputData.path(:,path_index);
             if mod(j,2)==1
                 solution=optimLog.group(j).solution_history(i,:);
                 [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
@@ -84,10 +92,13 @@ function calculateHistoy()
             optimLog.path_history(:,:,j,i)=path;
             optimLog.regPath_history(:,:,j,i)=regular_path(path,size(path,2)-1);
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
+            if j==1
+                assert(sum==optimLog.group(1).fitness_history(i),...
+                    "%f  %f\n",sum,optimLog.group(1).fitness_history(i));
+            end
         end
         optimLog.qTable_history(i+1)=fitnessFun.qTable;
         optimLog.sum.fitness_history(i)=sum;
-        
     end
     qTable_initial = optimLog.qTable_history(ni+1);
     for i=(ni+1):(2*ni)
@@ -95,6 +106,12 @@ function calculateHistoy()
         sum=0;
         for j=1:n
             fitnessFun.serial_number=j;
+            if j==n && remain>0
+                path_index = (inputData.spacenum-remain+1):inputData.spacenum;
+            else
+                path_index = (1:(spacePerGroup+1))+(j-1)*spacePerGroup;
+            end
+            fitnessFun.target_path=inputData.path(:,path_index);
             if mod(j,2)==0
                 solution=optimLog.group(j).solution_history(i-ni,:);
                 [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
@@ -113,6 +130,10 @@ function calculateHistoy()
             optimLog.path_history(:,:,j,i)=path;
             optimLog.regPath_history(:,:,j,i)=regular_path(path,size(path,2)-1);
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
+            if j==1
+                assert(sum==optimLog.group(1).fitness_history(end),...
+                    "%f  %f\n",sum,optimLog.group(1).fitness_history(end));
+            end
         end
         optimLog.qTable_history(i+1)=fitnessFun.qTable;
         optimLog.sum.fitness_history(i)=sum;
