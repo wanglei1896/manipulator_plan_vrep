@@ -1,7 +1,5 @@
 %clear vrep clinetID
 disp('Send to V-rep');
-% vrep=remApi('remoteApi','extApi.h'); % using the header (requires a compiler)
-vrep=remApi('remoteApi')'; % using the prototype file (remoteApiProto.m)
 vrep.simxFinish(-1); % just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',19999,true,true,5000,5);
 
@@ -21,7 +19,7 @@ disp('Program ended');
 
 function send2vrep(vrep, clientID)
 global inputData outputData
-    diseredPath=inputData.path;
+%     diseredPath=inputData.path;
     joint_angle=outputData.trajectory;
     try
         % get handle
@@ -34,9 +32,7 @@ global inputData outputData
         
         %Set the position of every joint
         while(vrep.simxGetConnectionId(clientID) ~= -1) % while v-rep connection is still active
-            for i=1:inputData.spacenum+1
-                vrep.simxSetObjectPosition(clientID,target_dummy,handle_rigArmjoint(1),diseredPath(:,i),vrep.simx_opmode_oneshot);
-            end
+            vrep.simxSetIntegerSignal(clientID,'SIG_execute',1,vrep.simx_opmode_oneshot);
             for i=1:outputData.spacenum+1
                 vrep.simxPauseCommunication(clientID,1);
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(1),joint_angle(1,i)+pi/2,vrep.simx_opmode_oneshot);
@@ -56,4 +52,5 @@ global inputData outputData
         vrep.simxPauseCommunication(clientID,0);
         disp(e);
     end
+    vrep.simxSetIntegerSignal(clientID,'SIG_execute',0,vrep.simx_opmode_oneshot);
 end

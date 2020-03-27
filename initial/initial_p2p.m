@@ -19,6 +19,12 @@ inputData.pFinal = [1 0 0 0.2;
                     0 1 0 0;
                     0 0 1 0;
                     0 0 0 1];
+outputData.spacenum = 20;
+
+% 从vrep中读入数据(pStart, pFinal)
+% vrep=remApi('remoteApi','extApi.h'); % using the header (requires a compiler)
+vrep=remApi('remoteApi')'; % using the prototype file (remoteApiProto.m)
+fromVrep_p2p;
+
 [inputData.qStart, inputData.qFinal] = ...
     regular_JointPos(model.ikunc(inputData.pStart), model.ikunc(inputData.pFinal));
-outputData.spacenum = 20;

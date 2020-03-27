@@ -93,7 +93,7 @@ function calculateHistoy()
             optimLog.regPath_history(:,:,j,i)=regular_path(path,size(path,2)-1);
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
             if j==1
-                assert(sum==optimLog.group(1).fitness_history(i),...
+                assert(abs(sum-optimLog.group(1).fitness_history(i))<0.0001,...
                     "%f  %f\n",sum,optimLog.group(1).fitness_history(i));
             end
         end
@@ -131,7 +131,7 @@ function calculateHistoy()
             optimLog.regPath_history(:,:,j,i)=regular_path(path,size(path,2)-1);
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
             if j==1
-                assert(sum==optimLog.group(1).fitness_history(end),...
+                assert(abs(sum-optimLog.group(1).fitness_history(end))<0.0001,...
                     "%f  %f\n",sum,optimLog.group(1).fitness_history(end));
             end
         end

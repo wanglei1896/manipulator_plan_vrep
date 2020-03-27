@@ -4,10 +4,10 @@
 %    path: 路径的点序列[xseq; 
 %                      yseq; 
 %                      zseq] 
-function result = input_ap(path, spacenum)
+function result = input_ap(path)
     result.pStart = [];
     result.qStart = [];
-    result.path = regular_path(path, spacenum);
-    result.spacenum = spacenum;
+    result.spacenum = 20;
+    result.path = regular_path(path, result.spacenum);
 end
 

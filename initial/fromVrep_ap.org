@@ -1,0 +1,2 @@
+* TODO remote api中没有操作path的方法
+[x] 改为读取在path上运动的dummy的位置，需要发送signal来同步dummy的运动

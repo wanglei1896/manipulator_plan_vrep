@@ -1,0 +1,9 @@
+* TODO 寻找一些用于实验的路径素材
+** TODO 简单
+直线、圆、方形...
+** TODO 复杂
+Font shapes, model edges, homemade
+* TODO Find some models as obstacal scene
+car doors, 
+* DONE 编写采样路径的通信协议
+* TODO 同步vrep，使得规划出的轨迹按照给出的时间轴运行
