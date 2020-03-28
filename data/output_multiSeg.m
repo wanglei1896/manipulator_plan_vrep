@@ -1,4 +1,4 @@
-%% along path规划，机械臂的输出位姿轨迹（关节角）
+%% along path规划，机械臂的输出位姿轨迹
 
 function [result] = output_multiSeg()
     result.spacenum = 0;   %轨迹采样段数

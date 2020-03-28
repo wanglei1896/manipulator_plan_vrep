@@ -20,12 +20,12 @@ addpath(fullfile(ProjectPath, 'connectionTool')); %与vrep进行通信的库
 startup_rvc; % 配置机器人库环境
 
 %% 配置、环境数据获取
-initial_ap;
-% initial_p2p
+initial_ap_ws;
+%initial_jointspace;
 
 %% 规划过程
-planner_ap;
-% planner_p2p;
+planner_ap_ws;
+% planner_jointspace;
 
 %% 在环境中执行规划出的位姿/轨迹
 executeInVrep;
