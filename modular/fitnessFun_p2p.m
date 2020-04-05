@@ -4,7 +4,9 @@ classdef fitnessFun_p2p
     
     properties
         % 访问全局变量太慢，所以存在这里作为私有数据
-        d; a; alpha; base; joint_num; % 机械臂的相关参数
+        d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
+        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示）
+        total_vn;
         spacenum; % 生成轨迹段数
         qStart; qFinal;
         
@@ -17,6 +19,7 @@ classdef fitnessFun_p2p
             obj.a = manipulator_model.a;
             obj.alpha = manipulator_model.alpha;
             obj.base = manipulator_model.base.t;
+            obj.offset = manipulator_model.offset;
         end
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
@@ -32,6 +35,7 @@ classdef fitnessFun_p2p
                 ql=result(1:6,:);
                 vl=result(7:12,:);
                 al=result(13:18,:);
+                n_tj=size(ql,2); %整条轨迹上的采样点
                 %{
                   ft表示轨迹中速度/加速度超过max的轨迹片段的各采样点速度/加速度之和。
                   此指标可发现轨迹中速度/加速度过高的片段，并引导agent减少或改善这些片段；
@@ -52,13 +56,38 @@ classdef fitnessFun_p2p
                 %}
                 fq=sum(sum(abs(diff(ql'))));
                 %{
+                  oa表示避障指标
+                %}
+                pos=zeros(3,n_tj); %存储整条轨迹上机械臂末端位置
+                collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+                for i=1:n_tj
+                    theta=ql(:,i);
+                    trans=fastForwardTrans(theta); %forwardTrans to get the transform matrix
+                    
+                    for j=1:6
+                        tran = trans(:,:,j+1);
+                        vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                        S1Obj.XData=vertices(1,:)';
+                        S1Obj.YData=vertices(2,:)';
+                        S1Obj.ZData=vertices(3,:)';
+                        for obstacle = obj.obstacles
+                            S2Obj.XData=obstacle.vex(1,:)';
+                            S2Obj.YData=obstacle.vex(2,:)';
+                            S2Obj.ZData=obstacle.vex(3,:)';
+                            % Do collision detection
+                            if GJK(S1Obj,S2Obj,6)
+                                collision_count=collision_count+1;
+                            end
+                        end
+                    end
+                    
+                    pos(:,i)=trans(1:3,4,end);
+                end
+                
+                oa=collision_count;
+                %{
                   fdis表示机械臂末端划过的轨迹长度
                 %}
-                pos=zeros(3,size(ql,2));
-                for i=1:size(ql,2)
-                    %pos(:,i) = manipulator.A(6, ql(:,i)).t;
-                    pos(:,i) = fastForwardTrans(6, ql(:,i));
-                end
                 dx=diff(pos(1,:)); dy=diff(pos(2,:)); dz=diff(pos(3,:));
                 dis=sqrt(dx.^2+dy.^2+dz.^2);
                 fdis=sum(dis);
@@ -66,49 +95,38 @@ classdef fitnessFun_p2p
                   time表示轨迹运动的时间
                 %}
                 time=sum(parameters(end-1:end));
-                cost_vec=[ft,fq,fdis,time];
-                cost=cost_vec*[0,0,1,0]';
+                cost_vec=[ft,fq,fdis,time,oa];
+                cost=cost_vec*[0,0,1,0,1]';
                 evaluate_value=1/(cost+eps); %防止/0错误
             end
-            function pos = fastForwardTrans(number, theta)
-                a=obj.a; d=obj.d; alpha=obj.alpha; base=obj.base;
+            function dis = calcuDistance(point, verteces)
+                %求点与凸包间的最短距离(在凸包内时为0)
+                
+            end
+            function T = fastForwardTrans(theta)
+                a=obj.a; d=obj.d; alpha=obj.alpha; 
+                base=eye(4); base(1:3,4)=obj.base;
+                theta=theta'+obj.offset;
                 % toolbox中自带的正运动学要调用对象，太慢，这里优化一个更快的版本
-                assert(number>=0 && number<=6) %仅适用于6关节机械臂
-                % number表示关节编号，0-5号关节，6号末端
-                if number == 0
-                    pos = base+[0 0 0]'; return;
-                end
-                T01=T_para(theta(1),d(1),a(1),alpha(1));
-                if number == 1
-                    pos = base+T01(1:3,4); return;
-                end
+                T=zeros(4,4,7);
+                T(:,:,1) = base; %joint1
+                T01=base*T_para(theta(1),d(1),a(1),alpha(1));
+                T(:,:,2) = T01; %joint2
                 T12=T_para(theta(2),d(2),a(2),alpha(2));
                 T02=T01*T12;
-                if number == 2
-                    pos = base+T02(1:3,4); return;
-                end
+                T(:,:,3) = T02; %joint3
                 T23=T_para(theta(3),d(3),a(3),alpha(3));
                 T03=T02*T23;
-                if number == 3
-                    pos = base+T03(1:3,4); return;
-                end
+                T(:,:,4) = T03; %joint4
                 T34=T_para(theta(4),d(4),a(4),alpha(4));
                 T04=T03*T34;
-                if number == 4
-                    pos = base+T04(1:3,4); return;
-                end
+                T(:,:,5) = T04; %joint5
                 T45=T_para(theta(5),d(5),a(5),alpha(5));
                 T05=T04*T45;
-                if number == 5
-                    pos = base+T05(1:3,4); return;
-                end
+                T(:,:,6) = T05; %joint6
                 T56=T_para(theta(6),d(6),a(6),alpha(6));
                 T06=T05*T56;
-                if number == 6
-                    pos = base+T06(1:3,4); return;
-                end
-                %positions=[[0 0 0]', T01(1:3,4), T02(1:3,4), T03(1:3,4), T04(1:3,4), T05(1:3,4), T06(1:3,4)];
-                %pos = positions(:,number+1);
+                T(:,:,7) = T06; %end-effctor
 
                 function T = T_para(theta,d,a,alpha)
                     T=[cos(theta),-sin(theta)*cos(alpha),sin(theta)*sin(alpha),a*cos(theta);
@@ -119,9 +137,11 @@ classdef fitnessFun_p2p
             end
         end
         
-        function [status, result] = convertSolutionToTrajectory(obj, parameters)
+        function [status, result] = convertSolutionToTrajectory(obj, parameters, spacenum)
             status=0;
-            spacenum = obj.spacenum;
+            if nargin==2
+                spacenum = obj.spacenum;
+            end
             qStart = obj.qStart;
             qFinal = obj.qFinal;
 

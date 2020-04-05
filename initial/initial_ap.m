@@ -19,8 +19,6 @@ end
 outputData = output_multiSeg();
 
 %%% 默认
-inputData.pStart = eye(4);
-inputData.pStart(1:3,4) = inputData.path(:,1);
 outputData.spacenum = optimLog.group_num*10;
 
 %%% 从vrep中读取数据
@@ -28,4 +26,6 @@ outputData.spacenum = optimLog.group_num*10;
 vrep=remApi('remoteApi')'; % using the prototype file (remoteApiProto.m)
 fromVrep_ap;
 
+inputData.pStart = eye(4);
+inputData.pStart(1:3,4) = inputData.path(:,1);
 inputData.qStart = model.ikunc(inputData.pStart);

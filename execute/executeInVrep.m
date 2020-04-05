@@ -35,12 +35,12 @@ global inputData outputData
             vrep.simxSetIntegerSignal(clientID,'SIG_execute',1,vrep.simx_opmode_oneshot);
             for i=1:outputData.spacenum+1
                 vrep.simxPauseCommunication(clientID,1);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(1),joint_angle(1,i)+pi/2,vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(2),joint_angle(2,i)+pi/2,vrep.simx_opmode_oneshot);
+                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(1),joint_angle(1,i),vrep.simx_opmode_oneshot);
+                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(2),joint_angle(2,i),vrep.simx_opmode_oneshot);
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(3),joint_angle(3,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(4),joint_angle(4,i)+pi/2,vrep.simx_opmode_oneshot);
+                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(4),joint_angle(4,i),vrep.simx_opmode_oneshot);
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(5),joint_angle(5,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(6),joint_angle(6,i)+pi/2,vrep.simx_opmode_oneshot);
+                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(6),joint_angle(6,i),vrep.simx_opmode_oneshot);
                 vrep.simxPauseCommunication(clientID,0);
 
                 %[returnCode,actualPosition(:,i)]=vrep.simxGetObjectPosition(clientID,tip_dummy,handle_rigArmjoint(1),vrep.simx_opmode_blocking);

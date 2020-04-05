@@ -7,7 +7,7 @@ global outputData inputData optimLog model fitnessFun
 
 %% 配置代价函数
 % 轨迹编码
-fitnessFun = fitnessFun_p2p(model);
+fitnessFun = fitnessFun_p2p(model.km);
 fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % qm * 6
                             -pi, pi; -pi, pi;
                             -pi, pi; -pi, pi;
@@ -15,8 +15,11 @@ fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % qm * 6
                             -pi/4, pi/4; -pi/4, pi/4;
                             -pi/4, pi/4; -pi/4, pi/4;
                             0.1, 10; 0.1, 10]; % t1, t2
-fitnessFun.spacenum = outputData.spacenum;
+fitnessFun.spacenum = 100;
 fitnessFun.qStart = inputData.qStart; fitnessFun.qFinal =inputData.qFinal;
+fitnessFun.obstacles = inputData.obstacles;
+fitnessFun.linkShapes = model.shape;
+fitnessFun.total_vn = model.num_shapeVertex;
 
 %% 算法初始化
 %{ 
@@ -30,8 +33,8 @@ actualPosition=zeros(3,iter);
 % 输出的关节运动序列
 outputjointValue=zeros(6,iter);
 %}
-sizepop = 20;
-iternum = 100;
+sizepop = 10;
+iternum = 50;
 
 
 %% 调用算法规划
@@ -42,7 +45,7 @@ disp('planning start.');
 last_solution = optimLog.solution_history(end,:);
 outputData.segment_times = last_solution(end-1:end);
 outputData.segment_curtimes = [0, last_solution(end-1), last_solution(end)+last_solution(end-1)];
-[last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
+[last_status, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution,outputData.spacenum);
 outputData.trajectory = last_result(1:6,:);
 
 %{

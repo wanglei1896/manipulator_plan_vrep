@@ -19,7 +19,7 @@ inputData.pFinal = [1 0 0 0.2;
                     0 1 0 0;
                     0 0 1 0;
                     0 0 0 1];
-outputData.spacenum = 20;
+outputData.spacenum = 10;
 
 % 从vrep中读入数据(pStart, pFinal)
 % vrep=remApi('remoteApi','extApi.h'); % using the header (requires a compiler)
@@ -27,4 +27,4 @@ vrep=remApi('remoteApi')'; % using the prototype file (remoteApiProto.m)
 fromVrep_p2p;
 
 [inputData.qStart, inputData.qFinal] = ...
-    regular_JointPos(model.ikunc(inputData.pStart), model.ikunc(inputData.pFinal));
+    regular_JointPos(model.km.ikine(inputData.pStart,'rdf'), model.km.ikine(inputData.pFinal,'rdf'));
