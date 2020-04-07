@@ -15,7 +15,7 @@ fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % qm * 6
                             -pi/4, pi/4; -pi/4, pi/4;
                             -pi/4, pi/4; -pi/4, pi/4;
                             0.1, 10; 0.1, 10]; % t1, t2
-fitnessFun.spacenum = 100;
+fitnessFun.spacenum = 10;
 fitnessFun.qStart = inputData.qStart; fitnessFun.qFinal =inputData.qFinal;
 fitnessFun.obstacles = inputData.obstacles;
 fitnessFun.linkShapes = model.shape;
@@ -33,8 +33,8 @@ actualPosition=zeros(3,iter);
 % 输出的关节运动序列
 outputjointValue=zeros(6,iter);
 %}
-sizepop = 10;
-iternum = 50;
+sizepop = 50;
+iternum = 10;
 
 
 %% 调用算法规划

@@ -19,7 +19,7 @@ inputData.pFinal = [1 0 0 0.2;
                     0 1 0 0;
                     0 0 1 0;
                     0 0 0 1];
-outputData.spacenum = 10;
+outputData.spacenum = 100;
 
 % 从vrep中读入数据(pStart, pFinal)
 % vrep=remApi('remoteApi','extApi.h'); % using the header (requires a compiler)
