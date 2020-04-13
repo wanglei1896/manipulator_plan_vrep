@@ -50,7 +50,8 @@ global inputData outputData
         end
     catch e
         vrep.simxPauseCommunication(clientID,0);
-        disp(e);
+        disp(e.message)
+        disp([e.stack(1).name, ': ', num2str(e.stack(1).line)])
     end
     vrep.simxSetIntegerSignal(clientID,'SIG_execute',0,vrep.simx_opmode_oneshot);
 end

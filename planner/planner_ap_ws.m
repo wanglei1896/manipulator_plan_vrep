@@ -16,6 +16,8 @@ fitnessFun.parameter_bound=[-1, 1; -1, 1; -1, 1; % p * 3
                             -1, 1; -1, 1; -1, 1;
                             -1/4, 1/4; -1/4, 1/4; -1/4, 1/4; % vp * 3
                             -1/4, 1/4; -1/4, 1/4; -1/4, 1/4;
+                            -1/4, 1/4; -1/4, 1/4; -1/4, 1/4; % ap * 3
+                            -1/4, 1/4; -1/4, 1/4; -1/4, 1/4;
                             0.1, 10]; % time
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 fitnessFun.nd = size(inputData.path,1);
@@ -31,7 +33,7 @@ main();
 function main()
 global inputData outputData optimLog fitnessFun
     %% 算法初始化
-    sizepop = 10;
+    sizepop = 100;
     iternum = 50;
     groupnum = optimLog.group_num;
 

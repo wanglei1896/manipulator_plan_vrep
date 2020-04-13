@@ -51,14 +51,18 @@ classdef fitnessFun_ap_ws
             regPos = regular_path(ql,size(obj.target_path,2)-1);
             deltas=abs(obj.target_path-regPos);
             Pos_punishment=[];
+            fdt=1;
             for delta=deltas(:,2:end)
                 if sum(delta)>0.001
                     Pos_punishment=[Pos_punishment,sum(delta)];
                 else
                     Pos_punishment=[Pos_punishment,0];
                 end
+                fdt=fdt*(sum(delta)+1);
             end
-            fdt=sum(sum(deltas));
+            fdt=fdt*(sum(deltas(:,end))+1);
+            fdt=log10(fdt);
+            %fdt=sum(sum(deltas));
             %{
               fdis表示机械臂末端划过的轨迹长度
             %}
@@ -89,6 +93,7 @@ classdef fitnessFun_ap_ws
             % 右侧端点来自优化向量
             x1=parameters(1:nd)';
             vx1=parameters(nd+1:nd*2)';
+            ax1=parameters(nd*2+1:nd*3)';
             t1=parameters(end);
             assert(t1>0);
 
@@ -97,19 +102,30 @@ classdef fitnessFun_ap_ws
             assert(isequal(size(vx1),[nd,1])); % 需为列向量
 
             % compute interpolate factor(analytical solution)
+            %{
             a00=x0;
             a01=vx0;
             a02=ax0/2;
             a03=(4*x1-vx1*t1-4*x0-3*vx0*t1-ax0*t1^2)/t1^3;
             a04=(vx1*t1-3*x1+3*x0+2*vx0*t1+ax0*t1^2/2)/t1^4;
-            A1 = [a00, a01, a02, a03, a04];
+            a05=t1^5;
+            A1 = [a00, a01, a02, a03, a04, a05];
+            %}
+            A=[1 0 0 0 0 0;
+               0 1 0 0 0 0;
+               0 0 2 0 0 0;
+               1 t1 t1^2 t1^3 t1^4 t1^5;
+               0 1 2*t1 3*t1^2 4*t1^3 5*t1^4;
+               0 0 2 6*t1 12*t1^2 20*t1^3];
+            b=[x0'; vx0'; ax0'; x1'; vx1'; ax1'];
+            A1 = A\b;
 
             tl1=linspace(0,t1,spacenum+1);
             
             z1=zeros(1,length(tl1));
-            result=[A1*[tl1.^0; tl1.^1; tl1.^2; tl1.^3; tl1.^4]; % the angle varies of each joint
-                    A1*[z1; tl1.^0; 2*tl1.^1; 3*tl1.^2; 4*tl1.^3]; % the velocity varies of each joint
-                    A1*[z1; z1; 2*tl1.^0; 6*tl1.^1; 12*tl1.^2]; % the acceleration varies of each joint
+            result=[A1'*[tl1.^0; tl1.^1; tl1.^2; tl1.^3; tl1.^4; tl1.^5]; % the angle varies of each joint
+                    A1'*[z1; tl1.^0; 2*tl1.^1; 3*tl1.^2; 4*tl1.^3; 5*tl1.^4]; % the velocity varies of each joint
+                    A1'*[z1; z1; 2*tl1.^0; 6*tl1.^1; 12*tl1.^2; 20*tl1.^3]; % the acceleration varies of each joint
                    ];
         end
     end

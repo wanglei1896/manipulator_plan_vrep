@@ -6,11 +6,11 @@
 % fitvec_history是多目标优化时各指标分量向量
 function [fitness_history, fitvec_history, solution_history, optimization_time] = AlgorithmBSO_fun(sizepop,iteration_num,solution_bound,fitnessfun)
     %% properties
-    obj_sizepop=50;
-    obj_iteration_num=100;
+    obj_sizepop=100;
+    obj_iteration_num=50;
     obj_precision=0.001;
     
-    obj_decay_rate=0.98; %衰减率
+    obj_decay_rate=0.9; %衰减率
     obj_ante_dis=3; %antenna distance
     obj_step_lenth=1; %天牛的步长
                      %学习因子

@@ -1,17 +1,28 @@
 %% along path规划中优化过程的图形化展示
 % 优化过程中各个解代表的机械臂末端路径的变化
 % 
-global optimLog
 
 if isequal(optimLog.path_history,[])
     calculateHistoy();
 end
 
-%plotOthers();
+plotOthers();
 %figure,
 %plotInWS();
 %figure,
-plotInCS();
+%plotInCS();
+
+function plotOthers()
+global optimLog
+	plot([optimLog.group(1).fitness_history, optimLog.group(2).fitness_history])
+    legend group1 group2
+    figure,
+    plot(optimLog.group(1).fitvec_history(:,6:end));
+    figure,
+    plot(optimLog.group(2).fitvec_history(:,6:end));
+    figure,
+    plot(optimLog.sum.fitness_history);
+end
 
 function plotInWS()
     global optimLog inputData
@@ -106,22 +117,11 @@ function plotInCS()
     end
 end
 
-function plotOthers()
-	plot([optimLog.group(1).fitness_history, optimLog.group(2).fitness_history])
-    legend group1 group2
-    figure,
-    plot(optimLog.group(1).fitvec_history(:,6:end));
-    figure,
-    plot(optimLog.group(2).fitvec_history(:,6:end));
-    figure,
-    plot(optimLog.sum.fitness_history);
-end
-
 % 通过optimLog里各组的solutionhistory重新计算还原出每次迭代时的qTable
 function calculateHistoy()
     global optimLog fitnessFun outputData inputData
     n = optimLog.group_num;
-    nj = size(optimLog.qTable_history.q, 1);
+    nj = size(optimLog.qTable_history(1).q, 1);
     ni = length(optimLog.group(1).fitness_history);  %迭代次数
     qTable_initial = optimLog.qTable_history(1);
     spacePerGroup = ceil(inputData.spacenum/n);
@@ -145,7 +145,7 @@ function calculateHistoy()
                 fitnessFun.qTable.vq(:,j+1)=result(nj+1:nj*2,end);
                 fitnessFun.qTable.aq(:,j+1)=result(nj*2+1:nj*3,end);
             else
-                solution=[qTable_initial.q(:,j+1)',qTable_initial.vq(:,j+1)',10]; %时间默认为10
+                solution=[qTable_initial.q(:,j+1)',qTable_initial.vq(:,j+1)',qTable_initial.aq(:,j+1)',10]; %时间默认为10
                 [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
             end
             path=result(1:nj,:);
