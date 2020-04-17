@@ -4,11 +4,8 @@ global outputData inputData optimLog model fitnessFun
 %q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%初始关节角
 
 %% optimLog更新，因此重置受其影响的变量
-% 下面的值由于计算费时，先清空，再在analyze/reprsent_ap.m中计算
-optimLog.path_history=[];
-optimLog.regPath_history=[];
-optimLog.sum.fitness_history=[];
-optimLog.qTable_history=[];
+% optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
+optimLog = optimLog_ap(optimLog.group_num);
 
 %% 配置代价函数
 % 轨迹编码
@@ -33,54 +30,53 @@ main();
 function main()
 global inputData outputData optimLog fitnessFun
     %% 算法初始化
-    sizepop = 10;
+    sizepop = 50;
     iternum = 50;
     groupnum = optimLog.group_num;
 
     %% 调用算法规划
     disp('planning start.');
-    spacePerGroup = ceil(inputData.spacenum/groupnum);
-    remain = mod(inputData.spacenum,groupnum);
+    optimLog.round_num=2;
     % 第一轮
+    for ii=1:optimLog.round_num
     for i=1:2:groupnum
         fitnessFun.serial_number = i;
-        if i==groupnum && remain>0
-            path_index = (inputData.spacenum-remain+1):inputData.spacenum;
-        else
-            path_index = (1:(spacePerGroup+1))+(i-1)*spacePerGroup;
-        end
+        path_index=equalDivide(inputData.spacenum,groupnum,i);
         fitnessFun.target_path = inputData.path(:,path_index);
-        [optimLog.group(i).fitness_history, optimLog.group(i).fitvec_history,...
-            optimLog.group(i).solution_history,optimization_time] ...
+        [fitness_history, fitvec_history,...
+            solution_history,optimization_time] ...
             = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
+        optimLog.group(i).fitness_history=[optimLog.group(i).fitness_history;fitness_history];
+        optimLog.group(i).fitvec_history=[optimLog.group(i).fitvec_history;fitvec_history];
+        optimLog.group(i).solution_history=[optimLog.group(i).solution_history;solution_history];
         last_solution = optimLog.group(i).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         % 更新qTable每段右端点
-        fitnessFun.qTable.q(:,i+1) = last_result(1:6,end);
-        fitnessFun.qTable.vq(:,i+1) = last_result(7:12,end);
-        fitnessFun.qTable.aq(:,i+1) = last_result(13:18,end);
+        fitnessFun.qTable.q(:,i+1) = last_result(1:6,fitnessFun.spacenum+1);
+        fitnessFun.qTable.vq(:,i+1) = last_result(7:12,fitnessFun.spacenum+1);
+        fitnessFun.qTable.aq(:,i+1) = last_result(13:18,fitnessFun.spacenum+1);
     end
     % 第二轮
     for i=2:2:groupnum
         fitnessFun.serial_number = i;
-        if i==groupnum && remain>0
-            path_index = (inputData.spacenum-remain+1):inputData.spacenum;
-        else
-            path_index = (1:(spacePerGroup+1))+(i-1)*spacePerGroup;
-        end
+        path_index=equalDivide(inputData.spacenum,groupnum,i);
         fitnessFun.target_path = inputData.path(:,path_index);
-        [optimLog.group(i).fitness_history, optimLog.group(i).fitvec_history,...
-             optimLog.group(i).solution_history, optimization_time] ...
+        [fitness_history, fitvec_history,...
+             solution_history, optimization_time] ...
             = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
+        optimLog.group(i).fitness_history=[optimLog.group(i).fitness_history;fitness_history];
+        optimLog.group(i).fitvec_history=[optimLog.group(i).fitvec_history;fitvec_history];
+        optimLog.group(i).solution_history=[optimLog.group(i).solution_history;solution_history];
         last_solution = optimLog.group(i).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
-        fitnessFun.qTable.q(:,i+1) = last_result(1:6,end);
-        fitnessFun.qTable.vq(:,i+1) = last_result(7:12,end);
-        fitnessFun.qTable.aq(:,i+1) = last_result(13:18,end);
+        fitnessFun.qTable.q(:,i+1) = last_result(1:6,fitnessFun.spacenum+1);
+        fitnessFun.qTable.vq(:,i+1) = last_result(7:12,fitnessFun.spacenum+1);
+        fitnessFun.qTable.aq(:,i+1) = last_result(13:18,fitnessFun.spacenum+1);
+    end
     end
     disp('planning ended');
     
-    % 综合各段，得出最终轨迹
+    % 综合各段，得出最终轨迹(合并第一段和各偶数点优化的段)
     outputData.trajectory = fitnessFun.qTable.q(:,1);
     assert(size(outputData.trajectory,2)==1) %trajectory中角度应存在每列上
     outputData.segment_curtimes(1) = 0;
@@ -88,9 +84,16 @@ global inputData outputData optimLog fitnessFun
         fitnessFun.serial_number = i;
         last_solution = optimLog.group(i).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
-        outputData.segment_times(i) = last_solution(13);
+        if i==1
+            outputData.trajectory = [outputData.trajectory, last_result(1:6,2:fitnessFun.spacenum+1)];%舍弃各组的第一个点，以免重复
+        elseif mod(i,2)==0
+            outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; 
+            % 轨迹中各段连接点处位置应与qTable中相同
+            assert(isequal(outputData.trajectory(:,i*fitnessFun.spacenum+1)...
+                ,fitnessFun.qTable.q(:,i+1)))
+        end
+        outputData.segment_times(i) = last_solution(end);
         outputData.segment_curtimes(i+1) = outputData.segment_curtimes(i)+outputData.segment_times(i);
-        outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; %舍弃各组的第一个点，以免重复
     end
 end
 

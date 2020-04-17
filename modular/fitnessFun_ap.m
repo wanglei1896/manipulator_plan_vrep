@@ -148,8 +148,20 @@ classdef fitnessFun_ap
             % 右侧端点来自优化向量
             x1=parameters(1:6)';
             vx1=parameters(7:12)';
-            t1=parameters(13);
+            t1=parameters(13)/2;
+            t2=parameters(13)/2;
             assert(t1>0);
+            
+            % 右右侧端点
+            if Serialnumber+2>size(qTable.q,2) %处理末端
+                x2=x1;
+                vx2=vx1;
+                ax2=zeros(num_joints,1);
+            else
+                x2=qTable.q(:,Serialnumber+2);
+                vx2=qTable.vq(:,Serialnumber+2);
+                ax2=qTable.aq(:,Serialnumber+2);
+            end
 
             assert(isequal(size(x0),[num_joints,1])); % 需为列向量
             assert(isequal(size(x1),[num_joints,1])); % 需为列向量
@@ -161,15 +173,35 @@ classdef fitnessFun_ap
             a02=ax0/2;
             a03=(4*x1-vx1*t1-4*x0-3*vx0*t1-ax0*t1^2)/t1^3;
             a04=(vx1*t1-3*x1+3*x0+2*vx0*t1+ax0*t1^2/2)/t1^4;
+            ax1=2*a02+6*a03*t1+12*a04*t1^2;
             A1 = [a00, a01, a02, a03, a04];
 
-            tl1=linspace(0,t1,spacenum+1);
+            b10=x1;
+            b11=vx1;
+            b12=ax1/2;
+            b13=(20*x2-20*x1-(8*vx2+12*vx1)*t2-(3*ax1-ax2)*t2^2)/(2*t2^3);
+            b14=(30*x1-30*x2+(14*vx2+16*vx1)*t2+(3*ax1-2*ax2)*t2^2)/(2*t2^4);
+            b15=(12*x2-12*x1-(6*vx2+6*vx1)*t2-(ax1-ax2)*t2^2)/(2*t2^5);
+            A2 = [b10, b11, b12, b13, b14, b15];
+
+            spacenum1=spacenum;
+            spacenum2=spacenum;
+            tl1=linspace(0,t1,spacenum1+1);
+            tl2=linspace(0,t2,spacenum2+1);
+            tl2=tl2(2:end); % 不重复计算同一点
             
             z1=zeros(1,length(tl1));
-            result=[A1*[tl1.^0; tl1.^1; tl1.^2; tl1.^3; tl1.^4]; % the angle varies of each joint
-                    A1*[z1; tl1.^0; 2*tl1.^1; 3*tl1.^2; 4*tl1.^3]; % the velocity varies of each joint
-                    A1*[z1; z1; 2*tl1.^0; 6*tl1.^1; 12*tl1.^2]; % the acceleration varies of each joint
+            z2=zeros(1,length(tl2));
+            result=[A1*[tl1.^0; tl1.^1; tl1.^2; tl1.^3; tl1.^4],...
+                    A2*[tl2.^0; tl2.^1; tl2.^2; tl2.^3; tl2.^4; tl2.^5]; % the angle varies of each joint
+                    A1*[z1; tl1.^0; 2*tl1.^1; 3*tl1.^2; 4*tl1.^3],...
+                    A2*[z2; tl2.^0; 2*tl2.^1; 3*tl2.^2; 4*tl2.^3; 5*tl2.^4]; % the velocity varies of each joint
+                    A1*[z1; z1; 2*tl1.^0; 6*tl1.^1; 12*tl1.^2],...
+                    A2*[z2; z2; 2*tl2.^0; 6*tl2.^1; 12*tl2.^2; 20*tl2.^3]; % the acceleration varies of each joint
                    ];
+            if Serialnumber+2>size(qTable.q,2) %处理末端
+                result=result(:,1:spacenum+1);
+            end
         end
     end
 end
