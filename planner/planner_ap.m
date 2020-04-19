@@ -31,7 +31,7 @@ function main()
 global inputData outputData optimLog fitnessFun
     %% 算法初始化
     sizepop = 50;
-    iternum = 50;
+    iternum = 20;
     groupnum = optimLog.group_num;
 
     %% 调用算法规划

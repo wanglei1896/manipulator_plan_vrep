@@ -7,9 +7,9 @@ if isequal(optimLog.path_history,[])
 end
 
 plotOthers();
-%figure,
-%plotInWS();
 figure,
+%plotInWS();
+%figure,
 plotInCS();
 
 function plotOthers()
@@ -29,8 +29,7 @@ function plotInWS()
     axis([-1,1,-1,1,-1,1])
     ni=length(optimLog.group(1).fitness_history)/optimLog.round_num;
     ng=optimLog.group_num;
-    for ii=1:optimLog.round_num
-    for i=1:(2*ni)
+    for i=1:2*ni*optimLog.round_num
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'k')
         hold on
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'rx')
@@ -51,7 +50,6 @@ function plotInWS()
             disp('');
         end
         pause(0.1)
-    end
     end
 end
 
@@ -132,19 +130,20 @@ function calculateHistoy()
             end
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
             if j==1 && ii==1
-                assert(abs(sum-optimLog.group(1).fitness_history(i))<1e4,...
+                assert(abs(sum-optimLog.group(1).fitness_history(i))<1e-4,...
                 	"%d %f  %f\n",i,sum,optimLog.group(1).fitness_history(i));
+            end
+            if j==1 && i==ni   %第一轮最后一次迭代时第一段轨迹的代价值
+                firstSegCost=1/fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
             end
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
         optimLog.sum.fitness_history(i)=sum;
     end
-    %qTable_initial = optimLog.qTable_history(ni+1);
     for i=(ni+1):(2*ni)
-     %   fitnessFun.qTable=qTable_initial;
         optimLog.path_history(:,:,1,(ii-1)*ni*2+i)=optimLog.path_history(:,:,1,(ii-1)*ni*2+ni);
         optimLog.regPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.regPath_history(:,:,1,(ii-1)*ni*2+ni);
-        sum=0;
+        sum=firstSegCost;  %第一段轨迹的代价值
         for j=2:2:n
             fitnessFun.serial_number=j;
             path_index=equalDivide(inputData.spacenum,n,j);
@@ -169,10 +168,6 @@ function calculateHistoy()
                     regular_path(path(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
             end
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
-            if j==1 && ii==1
-                assert(abs(sum-optimLog.group(1).fitness_history(ni))<0.0001,...
-                    "%d %f  %f\n",i,sum,optimLog.group(1).fitness_history(ni));
-            end
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
         optimLog.sum.fitness_history(i)=sum;

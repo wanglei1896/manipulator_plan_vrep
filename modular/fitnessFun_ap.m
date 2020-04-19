@@ -81,7 +81,7 @@ classdef fitnessFun_ap
             %}
             time=sum(parameters(end));
             cost_vec=[ft,fq,fdt,fdis,time, Pos_punishment];
-            cost=cost_vec*[1,1,1,1,0, zeros(1,length(Pos_punishment))]';
+            cost=cost_vec*[0,0,1,0,0, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function pos = fastForwardTrans(obj,number, theta)
