@@ -134,11 +134,12 @@ function calculateHistoy()
                 	"%d %f  %f\n",i,sum,optimLog.group(1).fitness_history(i));
             end
             if j==1 && i==ni   %第一轮最后一次迭代时第一段轨迹的代价值
+                fitnessFun.target_path=inputData.path(:,path_index(1:floor(length(path_index)/2)+1));
                 firstSegCost=1/fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
             end
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
-        optimLog.sum.fitness_history(i)=sum;
+        optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
     end
     for i=(ni+1):(2*ni)
         optimLog.path_history(:,:,1,(ii-1)*ni*2+i)=optimLog.path_history(:,:,1,(ii-1)*ni*2+ni);
@@ -170,7 +171,7 @@ function calculateHistoy()
             sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
-        optimLog.sum.fitness_history(i)=sum;
+        optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
     end
     end
     toc

@@ -40,7 +40,7 @@ classdef fitnessFun_ap
               此指标易引发运动时间(t1、t2)的扩张，最好配合'time'指标使用
             %}
             ft=0;
-            maxv=pi/4;
+            maxv=pi;
             for v=abs(vl)-maxv
                 for vs=v'
                     if vs > 0
@@ -81,7 +81,7 @@ classdef fitnessFun_ap
             %}
             time=sum(parameters(end));
             cost_vec=[ft,fq,fdt,fdis,time, Pos_punishment];
-            cost=cost_vec*[0,0,1,0,0, zeros(1,length(Pos_punishment))]';
+            cost=cost_vec*[1,0,1,0,0, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function pos = fastForwardTrans(obj,number, theta)

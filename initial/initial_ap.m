@@ -6,7 +6,7 @@ global  outputData ...
 
 %%% 初始化
 model = model_ur5();
-optimLog = optimLog_ap(2);   %优化有几个组
+optimLog = optimLog_ap(6);   %优化有几个组
 inputData = input_ap([[0.3;0.4;0], [0.3;0.4;0]+1*[0.3;-0.4;0]],... %输入的路径(默认)
                     optimLog.group_num*10);   %输入路径规范化后的采样段数 
 % 元循环，将上次优化的结果路径作为本次的目标路径

@@ -5,6 +5,7 @@ function result = optimLog_ap(group_num)
         result.group(i).fitness_history = [];
         result.group(i).solution_history = [];
         result.group(i).fitvec_history = [];
+        result.group(i).all_solution_history = [];
     end
     result.sum.fitness_history = [];
     result.qTable_history = [];
