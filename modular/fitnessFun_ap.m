@@ -4,7 +4,9 @@ classdef fitnessFun_ap
     
     properties
         % 访问全局变量太慢，所以存在这里作为私有数据
-        d; a; alpha; base; joint_num; % 机械臂的相关参数
+        d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
+        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示）
+        total_vn;
         spacenum; % 生成轨迹段数
         qTable; % 各轨迹段端点处的参数值（关节位置、速度、加速度）
         serial_number; %目前优化的是第几段
@@ -17,6 +19,7 @@ classdef fitnessFun_ap
             obj.d = manipulator_model.d;
             obj.a = manipulator_model.a;
             obj.alpha = manipulator_model.alpha;
+            obj.offset = manipulator_model.offset;
             obj.base = manipulator_model.base.t;
         end
         
@@ -57,10 +60,20 @@ classdef fitnessFun_ap
             %}
             pos=zeros(3,size(ql,2));
             for i=1:size(ql,2)
-                pos(:,i) = obj.fastForwardTrans(6, ql(:,i));
+                Trans=obj.fastForwardTrans(ql(:,i));
+                pos(:,i) = Trans(1:3,4,7);
             end
-            regPos = regular_path(pos,size(obj.target_path,2)-1);
-            deltas=abs(obj.target_path-regPos);
+            assert(mod(obj.spacenum,2)==0)
+            if size(ql,2)==obj.spacenum+1 %区分是两段还是一段
+                sp=obj.spacenum;
+            else
+                sp=obj.spacenum*2;
+            end
+            regPath = regular_path(obj.target_path, sp);
+            regPos_1 = regular_path(pos(:,1:floor(size(ql,2)/2)),sp/2);
+            regPos_2 = regular_path(pos(:,floor(size(ql,2)/2):end),sp/2); %相应分成两部分
+            regPos = [regPos_1, regPos_2(:,2:end)];
+            deltas=abs(regPath-regPos);
             Pos_punishment=[];
             for delta=deltas(:,2:end)
                 if sum(delta)>0.001
@@ -84,45 +97,30 @@ classdef fitnessFun_ap
             cost=cost_vec*[1,0,1,0,0, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
-        function pos = fastForwardTrans(obj,number, theta)
+        function T = fastForwardTrans(obj, theta)
+            a=obj.a; d=obj.d; alpha=obj.alpha; 
+            base=eye(4); base(1:3,4)=obj.base;
+            theta=theta'+obj.offset;
             % toolbox中自带的正运动学要调用对象，太慢，这里优化一个更快的版本
-            a=obj.a; d=obj.d; alpha=obj.alpha; base=obj.base;
-            assert(number>=0 && number<=6) %仅适用于6关节机械臂
-            % number表示关节编号，0-5号关节，6号末端
-            if number == 0
-                pos = base+[0 0 0]'; return;
-            end
-            T01=T_para(theta(1),d(1),a(1),alpha(1));
-            if number == 1
-                pos = base+T01(1:3,4); return;
-            end
+            T=zeros(4,4,7);
+            T(:,:,1) = base; %joint1
+            T01=base*T_para(theta(1),d(1),a(1),alpha(1));
+            T(:,:,2) = T01; %joint2
             T12=T_para(theta(2),d(2),a(2),alpha(2));
             T02=T01*T12;
-            if number == 2
-                pos = base+T02(1:3,4); return;
-            end
+            T(:,:,3) = T02; %joint3
             T23=T_para(theta(3),d(3),a(3),alpha(3));
             T03=T02*T23;
-            if number == 3
-                pos = base+T03(1:3,4); return;
-            end
+            T(:,:,4) = T03; %joint4
             T34=T_para(theta(4),d(4),a(4),alpha(4));
             T04=T03*T34;
-            if number == 4
-                pos = base+T04(1:3,4); return;
-            end
+            T(:,:,5) = T04; %joint5
             T45=T_para(theta(5),d(5),a(5),alpha(5));
             T05=T04*T45;
-            if number == 5
-                pos = base+T05(1:3,4); return;
-            end
+            T(:,:,6) = T05; %joint6
             T56=T_para(theta(6),d(6),a(6),alpha(6));
             T06=T05*T56;
-            if number == 6
-                pos = base+T06(1:3,4); return;
-            end
-            %positions=[[0 0 0]', T01(1:3,4), T02(1:3,4), T03(1:3,4), T04(1:3,4), T05(1:3,4), T06(1:3,4)];
-            %pos = positions(:,number+1);
+            T(:,:,7) = T06; %end-effctor
 
             function T = T_para(theta,d,a,alpha)
                 T=[cos(theta),-sin(theta)*cos(alpha),sin(theta)*sin(alpha),a*cos(theta);

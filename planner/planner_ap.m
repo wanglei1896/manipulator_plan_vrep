@@ -9,26 +9,29 @@ optimLog = optimLog_ap(optimLog.group_num);
 
 %% 配置代价函数
 % 轨迹编码
-fitnessFun = fitnessFun_ap(model);
-fitnessFun.parameter_bound=[-pi, pi; -pi, pi; % q * 6
-                            -pi, pi; -pi, pi;
-                            -pi, pi; -pi, pi;
-                            -pi, pi; -pi, pi; % vq * 6
-                            -pi, pi; -pi, pi;
-                            -pi, pi; -pi, pi;
-                            0.1, 10]; % time
+fitnessFun = fitnessFun_ap(model.km);
+for i=1:optimLog.group_num   % 为每组维护一个边界
+    fitnessFun.parameter_bound(:,:,i)=[
+                    -pi, pi; -pi, pi; % q * 6
+                    -pi, pi; -pi, pi;
+                    -pi, pi; -pi, pi;
+                    -pi, pi; -pi, pi; % vq * 6
+                    -pi, pi; -pi, pi;
+                    -pi, pi; -pi, pi;
+                    0.1, 10]; % time
+end
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点
-fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
+fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model.km);
 optimLog.qTable_history=fitnessFun.qTable;
 
 %% 主规划过程
 main();
 
 function main()
-global inputData outputData optimLog fitnessFun model
+global outputData optimLog fitnessFun
     %% 算法初始化
     sizepop = 20;
     iternum = 20;
@@ -36,7 +39,7 @@ global inputData outputData optimLog fitnessFun model
 
     %% 调用算法规划
     disp('planning start.');
-    optimLog.round_num=8;
+    optimLog.round_num=4;
     
     for ii=1:optimLog.round_num
         %fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
@@ -54,22 +57,28 @@ global inputData outputData optimLog fitnessFun model
     get_trajectory();
     
     function update_solution(group_number,round)
+        global inputData
+        bound=fitnessFun.parameter_bound(:,:,group_number);
+        bound=reshape(bound,size(bound,1),size(bound,2));
         if round>1
             % 利用上一轮的结果作为经验，简化本轮的优化
             last_round_sol = optimLog.group(group_number).solution_history(end,:);
             last_round_fitvec = optimLog.group(group_number).fitvec_history(end,:);
             assert(length(last_round_fitvec)==25 || length(last_round_fitvec)==15)
-            range=last_round_fitvec(15)*5;
-            %range=(fitnessFun.parameter_bound(1,2)-fitnessFun.parameter_bound(1,1))/4;
-            fitnessFun.parameter_bound(1:6,1)=last_round_sol(1:6)'-range;
-            fitnessFun.parameter_bound(1:6,2)=last_round_sol(1:6)'+range;
+            range=last_round_fitvec(15)*10;
+            %range=(bound(1,2)-bound(1,1))/4;
+            disp([num2str(group_number),'  ',num2str(range)])
+            fitnessFun.parameter_bound(1:6,1,group_number)=last_round_sol(1:6)'-range;
+            fitnessFun.parameter_bound(1:6,2,group_number)=last_round_sol(1:6)'+range;
         end
         fitnessFun.serial_number = group_number;
         path_index=equalDivide(inputData.spacenum,group_size,group_number);
         fitnessFun.target_path = inputData.path(:,path_index);
+        % 调用优化算法
         [fitness_history, fitvec_history,...
             solution_history,all_solution_history, optimization_time] ...
-            = AlgorithmBSO_fun(sizepop, iternum, fitnessFun.parameter_bound, @fitnessFun.fitnessf);
+            = AlgorithmBSO_fun(sizepop, iternum, bound, @fitnessFun.fitnessf);
+        
         optimLog.group(group_number).fitness_history=[optimLog.group(group_number).fitness_history;fitness_history];
         optimLog.group(group_number).fitvec_history=[optimLog.group(group_number).fitvec_history;fitvec_history];
         optimLog.group(group_number).solution_history=[optimLog.group(group_number).solution_history;solution_history];

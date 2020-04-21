@@ -105,6 +105,9 @@ function calculateHistoy()
     tic
     for ii=1:optimLog.round_num
     for i=1:ni
+        if i==ni && ii==3
+            disp('')
+        end
         sum=0;
         for j=1:2:n
             fitnessFun.serial_number=j;
@@ -118,7 +121,8 @@ function calculateHistoy()
             ql=result(1:nj,:);
             path=[];
             for q=ql
-                path=[path,fitnessFun.fastForwardTrans(6, q)];
+                Trans=fitnessFun.fastForwardTrans(q);
+                path=[path,Trans(1:3,4,7)];
             end
             optimLog.path_history(:,:,j,(ii-1)*ni*2+i)=path(:,1:fitnessFun.spacenum+1);
             optimLog.regPath_history(:,:,j,(ii-1)*ni*2+i)=...
@@ -134,8 +138,9 @@ function calculateHistoy()
                 	"%d %f  %f\n",i,sum,optimLog.group(1).fitness_history(i));
             end
             if j==1 && i==ni   %第一轮最后一次迭代时第一段轨迹的代价值
-                fitnessFun.target_path=inputData.path(:,path_index(1:floor(length(path_index)/2)+1));
-                firstSegCost=1/fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
+                fitnessFun.target_path=inputData.path(:,path_index(1:floor(length(path_index)/2+1)));
+                [fit, cost_vec]=fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
+                firstSegCost=1/fit-cost_vec(end);
             end
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
@@ -157,7 +162,8 @@ function calculateHistoy()
             ql=result(1:nj,:);
             path=[];
             for q=ql
-                path=[path,fitnessFun.fastForwardTrans(6, q)];
+                Trans=fitnessFun.fastForwardTrans(q);
+                path=[path,Trans(1:3,4,7)];
             end
             regPath=regular_path(path,size(path,2)-1);
             optimLog.path_history(:,:,j,(ii-1)*ni*2+i)=path(:,1:fitnessFun.spacenum+1);

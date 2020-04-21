@@ -3,5 +3,6 @@ function [result] = optimLog_p2p()
     result.fitness_history = [];
     result.solution_history = [];
     result.fitvec_history = [];
+    result.all_solution_history = [];
 end
 

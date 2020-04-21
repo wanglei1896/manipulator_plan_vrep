@@ -18,7 +18,7 @@ vrep.delete(); % call the destructor!
 disp('Program ended');
 
 function send2vrep(vrep, clientID)
-global inputData outputData
+global outputData
 %     diseredPath=inputData.path;
     joint_angle=outputData.trajectory;
     try
@@ -27,8 +27,6 @@ global inputData outputData
             [res,handle_rigArmjoint(i)] = vrep.simxGetObjectHandle(clientID,...
                 ['UR5_joint',num2str(i)],vrep.simx_opmode_oneshot_wait);
         end
-        [res,target_dummy] = vrep.simxGetObjectHandle(clientID,'target',vrep.simx_opmode_oneshot_wait);
-        [res,tip_dummy] = vrep.simxGetObjectHandle(clientID,'tip',vrep.simx_opmode_oneshot_wait);
         
         %Set the position of every joint
         while(vrep.simxGetConnectionId(clientID) ~= -1) % while v-rep connection is still active

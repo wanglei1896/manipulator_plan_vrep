@@ -9,5 +9,7 @@ function result = input_ap(path,spacenum)
     result.qStart = [];
     result.spacenum = spacenum;
     result.path = regular_path(path, result.spacenum);
+    result.obstacles = [];
+    result.obstacle_num = 0;
 end
 
