@@ -5,5 +5,7 @@ function [result] = input_p2p()
     result.pFinal = [];
     result.qStart = [];
     result.qFinal = [];
+    result.obstacles = [];
+    result.obstacle_num = 0;
 end
 

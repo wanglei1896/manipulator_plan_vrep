@@ -9,7 +9,12 @@ global model outputData
 
 
 %机械臂运行
-model.plot(outputData.trajectory(:,:)','trail',{'r'});
+model.km.plot(outputData.trajectory(:,1)','trail',{'r'})
+hold on
+plot3(inputData.obstacles(1).vex(1,:),inputData.obstacles(1).vex(2,:),inputData.obstacles(1).vex(3,:))
+plot3(inputData.obstacles(2).vex(1,:),inputData.obstacles(2).vex(2,:),inputData.obstacles(2).vex(3,:))
+plot3(inputData.obstacles(3).vex(1,:),inputData.obstacles(3).vex(2,:),inputData.obstacles(3).vex(3,:))
+model.km.plot(outputData.trajectory(:,:)','trail',{'r'});
 
 figure,
 plotJoint_Time(outputData);
