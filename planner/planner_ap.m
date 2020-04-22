@@ -21,6 +21,12 @@ for i=1:optimLog.group_num   % 为每组维护一个边界
                     0.1, 10]; % time
 end
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
+for i=1:inputData.obstacle_num
+    fitnessFun.obstacles(i).XData=inputData.obstacles(i).vex(1,:)';
+    fitnessFun.obstacles(i).YData=inputData.obstacles(i).vex(2,:)';
+    fitnessFun.obstacles(i).ZData=inputData.obstacles(i).vex(3,:)';
+end
+fitnessFun.linkShapes = model.shape;
 
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点
@@ -39,7 +45,7 @@ global outputData optimLog fitnessFun
 
     %% 调用算法规划
     disp('planning start.');
-    optimLog.round_num=4;
+    optimLog.round_num=3;
     
     for ii=1:optimLog.round_num
         %fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
@@ -64,8 +70,8 @@ global outputData optimLog fitnessFun
             % 利用上一轮的结果作为经验，简化本轮的优化
             last_round_sol = optimLog.group(group_number).solution_history(end,:);
             last_round_fitvec = optimLog.group(group_number).fitvec_history(end,:);
-            assert(length(last_round_fitvec)==25 || length(last_round_fitvec)==15)
-            range=last_round_fitvec(15)*10;
+            assert(length(last_round_fitvec)==26 || length(last_round_fitvec)==16)
+            range=last_round_fitvec(16)*5;
             %range=(bound(1,2)-bound(1,1))/4;
             disp([num2str(group_number),'  ',num2str(range)])
             fitnessFun.parameter_bound(1:6,1,group_number)=last_round_sol(1:6)'-range;

@@ -5,8 +5,7 @@ classdef fitnessFun_ap
     properties
         % 访问全局变量太慢，所以存在这里作为私有数据
         d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
-        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示）
-        total_vn;
+        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示, XData, YData, ZData）
         spacenum; % 生成轨迹段数
         qTable; % 各轨迹段端点处的参数值（关节位置、速度、加速度）
         serial_number; %目前优化的是第几段
@@ -36,6 +35,8 @@ classdef fitnessFun_ap
             ql=result(1:6,:);
             vl=result(7:12,:);
             al=result(13:18,:);
+            n_tj=size(ql,2); %整条轨迹上的采样点
+            pos=zeros(3,n_tj); %存储整条轨迹上机械臂末端位置
             %{
               ft表示轨迹中速度/加速度超过max的轨迹片段的各采样点速度/加速度之和。
               此指标可发现轨迹中速度/加速度过高的片段，并引导agent减少或改善这些片段；
@@ -56,13 +57,33 @@ classdef fitnessFun_ap
             %}
             fq=sum(sum(abs(diff(ql'))));
             %{
+              oa表示避障指标
+            %}
+            collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+            for i=1:n_tj
+                theta=ql(:,i);
+                trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
+                %{
+                for j=1:6
+                    tran = trans(:,:,j+1);
+                    vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                    S1Obj.XData=vertices(1,:)';
+                    S1Obj.YData=vertices(2,:)';
+                    S1Obj.ZData=vertices(3,:)';
+                    for k=1:length(obj.obstacles)
+                        % Do collision detection
+                        if GJK(S1Obj,obj.obstacles(k),6)
+                            collision_count=collision_count+1;
+                        end
+                    end
+                end
+                %}
+                pos(:,i)=trans(1:3,4,end);
+            end
+            oa=collision_count;
+            %{
               fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
             %}
-            pos=zeros(3,size(ql,2));
-            for i=1:size(ql,2)
-                Trans=obj.fastForwardTrans(ql(:,i));
-                pos(:,i) = Trans(1:3,4,7);
-            end
             assert(mod(obj.spacenum,2)==0)
             if size(ql,2)==obj.spacenum+1 %区分是两段还是一段
                 sp=obj.spacenum;
@@ -75,14 +96,14 @@ classdef fitnessFun_ap
             regPos = [regPos_1, regPos_2(:,2:end)];
             deltas=abs(regPath-regPos);
             Pos_punishment=[];
+            fdt=norm(deltas(:,1));
             for delta=deltas(:,2:end)
-                if sum(delta)>0.001
-                    Pos_punishment=[Pos_punishment,sum(delta)];
-                else
-                    Pos_punishment=[Pos_punishment,0];
+                Pos_punishment=[Pos_punishment,norm(delta)];
+                if sum(delta)>fdt
+                    fdt=norm(delta);
                 end
             end
-            fdt=sum(sum(deltas));
+            fdt=sum(sum(deltas));      
             %{
               fdis表示机械臂末端划过的轨迹长度
             %}
@@ -93,8 +114,8 @@ classdef fitnessFun_ap
               time表示轨迹运动的时间
             %}
             time=sum(parameters(end));
-            cost_vec=[ft,fq,fdt,fdis,time, Pos_punishment];
-            cost=cost_vec*[1,0,1,0,0, zeros(1,length(Pos_punishment))]';
+            cost_vec=[ft,fq,fdt,oa,fdis,time, Pos_punishment];
+            cost=cost_vec*[1,0,1,0,0,0, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function T = fastForwardTrans(obj, theta)

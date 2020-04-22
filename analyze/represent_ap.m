@@ -17,9 +17,9 @@ global optimLog
 	plot([optimLog.group(1).fitness_history, optimLog.group(2).fitness_history])
     legend group1 group2
     figure,
-    plot(optimLog.group(1).fitvec_history(:,6:end));
+    plot(optimLog.group(1).fitvec_history(:,7:end));
     figure,
-    plot(optimLog.group(2).fitvec_history(:,6:end));
+    plot(optimLog.group(2).fitvec_history(:,7:end));
     figure,
     plot(optimLog.sum.fitness_history);
 end
