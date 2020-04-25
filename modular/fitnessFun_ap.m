@@ -6,6 +6,7 @@ classdef fitnessFun_ap
         % 访问全局变量太慢，所以存在这里作为私有数据
         d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
         linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示, XData, YData, ZData）
+        linkCentre; obsCentre;
         spacenum; % 生成轨迹段数
         qTable; % 各轨迹段端点处的参数值（关节位置、速度、加速度）
         serial_number; %目前优化的是第几段
@@ -63,21 +64,25 @@ classdef fitnessFun_ap
             for i=1:n_tj
                 theta=ql(:,i);
                 trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
-                %{
                 for j=1:6
                     tran = trans(:,:,j+1);
-                    vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                    S1Obj.XData=vertices(1,:)';
-                    S1Obj.YData=vertices(2,:)';
-                    S1Obj.ZData=vertices(3,:)';
+                    centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                     for k=1:length(obj.obstacles)
-                        % Do collision detection
-                        if GJK(S1Obj,obj.obstacles(k),6)
+                        centre_dis=norm(centre1-obj.obsCentre(:,k),2);
+                        if centre_dis<0.1
                             collision_count=collision_count+1;
+                        elseif false
+                            % Do collision detection
+                            if GJK(S1Obj,obj.obstacles(k),6)
+                                vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                                S1Obj.XData=vertices(1,:)';
+                                S1Obj.YData=vertices(2,:)';
+                                S1Obj.ZData=vertices(3,:)';
+                                collision_count=collision_count+1;
+                            end
                         end
                     end
                 end
-                %}
                 pos(:,i)=trans(1:3,4,end);
             end
             oa=collision_count;
@@ -103,7 +108,7 @@ classdef fitnessFun_ap
                     fdt=norm(delta);
                 end
             end
-            fdt=sum(sum(deltas));      
+            fdt=sum(sum(deltas));
             %{
               fdis表示机械臂末端划过的轨迹长度
             %}
@@ -115,7 +120,7 @@ classdef fitnessFun_ap
             %}
             time=sum(parameters(end));
             cost_vec=[ft,fq,fdt,oa,fdis,time, Pos_punishment];
-            cost=cost_vec*[1,0,1,0,0,0, zeros(1,length(Pos_punishment))]';
+            cost=cost_vec*[1,0,1,1,0,0, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function T = fastForwardTrans(obj, theta)

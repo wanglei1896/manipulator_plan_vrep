@@ -21,12 +21,14 @@ for i=1:optimLog.group_num   % 为每组维护一个边界
                     0.1, 10]; % time
 end
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
-for i=1:inputData.obstacle_num
-    fitnessFun.obstacles(i).XData=inputData.obstacles(i).vex(1,:)';
-    fitnessFun.obstacles(i).YData=inputData.obstacles(i).vex(2,:)';
-    fitnessFun.obstacles(i).ZData=inputData.obstacles(i).vex(3,:)';
-end
+fitnessFun.obstacles=inputData.obstacles;
 fitnessFun.linkShapes = model.shape;
+for i=1:inputData.obstacle_num
+    fitnessFun.obsCentre=[fitnessFun.obsCentre, inputData.obstacles(i).centre];
+end
+for i=1:length(model.shape)
+    fitnessFun.linkCentre=[fitnessFun.linkCentre, model.shape(i).centre]; 
+end
 
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点

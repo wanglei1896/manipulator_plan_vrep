@@ -7,14 +7,17 @@ if isequal(optimLog.path_history,[])
 end
 
 plotOthers();
-figure,
+%figure,
 %plotInWS();
 %figure,
-plotInCS();
+%plotInCS();
 
 function plotOthers()
 global optimLog
 	plot([optimLog.group(1).fitness_history, optimLog.group(2).fitness_history])
+    legend group1 group2
+    figure,
+    plot([optimLog.group(1).fitvec_history(:,4),optimLog.group(2).fitvec_history(:,4)])
     legend group1 group2
     figure,
     plot(optimLog.group(1).fitvec_history(:,7:end));

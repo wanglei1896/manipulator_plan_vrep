@@ -33,7 +33,7 @@ global inputData model
         path = reshape(vrep.simxUnpackFloats(signal),3,inputData.spacenum+1);
         disp('sampled path:')
         disp(path)
-        %% 采样障碍物和机械臂3D建模顶点
+        %% 采样障碍物和机械臂3D建模
         n_obstacle=1;
         while true
             [res, ohandle] = vrep.simxGetObjectHandle(clientID,['obstacle_',num2str(n_obstacle)],vrep.simx_opmode_oneshot_wait);
@@ -64,6 +64,7 @@ global inputData model
             inputData.obstacles(i).vex=reshape(vex(2:numVex+1),3,numVex/3);
             inputData.obstacles(i).face=reshape(faces(2:numFace+1),3,numFace/3);
             inputData.obstacles(i).vn=numVex/3;
+            inputData.obstacles(i).centre=calculate_shapeCentre(inputData.obstacles(i).vex);
             vex=vex(numVex+2:end);
             faces=faces(numFace+2:end);
         end
@@ -72,12 +73,18 @@ global inputData model
             numVex=int32(vex(1));
             numFace=faces(1);
             model.shape(i).vex=reshape(vex(2:numVex+1),3,numVex/3);
+            model.shape(i).XData=model.shape(i).vex(1,:);
+            model.shape(i).YData=model.shape(i).vex(2,:);
+            model.shape(i).ZData=model.shape(i).vex(3,:);
             model.shape(i).face=reshape(faces(2:numFace+1),3,numFace/3);
             model.shape(i).vn=numVex/3;
+            model.shape(i).centre=calculate_shapeCentre(model.shape(i).vex);
             total_link_vn=total_link_vn+numVex/3;
             vex=vex(numVex+2:end);
             faces=faces(numFace+2:end);
         end
+        assert(isempty(vex))
+        assert(isempty(faces))
         model.num_shapeVertex=total_link_vn;
         
         %% 采样完成，数据复制到本地
