@@ -169,8 +169,8 @@ classdef fitnessFun_ap
             vx0=qTable.vq(:,Serialnumber);
             ax0=qTable.aq(:,Serialnumber);
 
-            % 右侧端点来自优化向量
-            x1=parameters(1:6)';
+            % 右侧端点
+            x1=qTable.q(:,Serialnumber+1);
             vx1=parameters(7:12)';
             t1=parameters(13)/2;
             t2=parameters(13)/2;

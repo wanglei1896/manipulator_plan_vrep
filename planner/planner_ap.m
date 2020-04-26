@@ -1,7 +1,6 @@
 %% along path 的规划过程
 % 
 global outputData inputData optimLog model fitnessFun
-%q0=initialJoint+[-pi/2, -pi/2, 0, -pi/2, 0, -pi/2];%初始关节角
 
 %% optimLog更新，因此重置受其影响的变量
 % optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
@@ -18,7 +17,8 @@ for i=1:optimLog.group_num   % 为每组维护一个边界
                     -pi, pi; -pi, pi; % vq * 6
                     -pi, pi; -pi, pi;
                     -pi, pi; -pi, pi;
-                    0.1, 10]; % time
+                    0.1, 10; % time
+                    0, 1]; %spare solution of q from ap1
 end
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 fitnessFun.obstacles=inputData.obstacles;
@@ -32,7 +32,7 @@ end
 
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点
-fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model.km);
+fitnessFun.qTable = initial_parameters(inputData.qStart);
 optimLog.qTable_history=fitnessFun.qTable;
 
 %% 主规划过程
@@ -47,7 +47,7 @@ global outputData optimLog fitnessFun
 
     %% 调用算法规划
     disp('planning start.');
-    optimLog.round_num=3;
+    optimLog.round_num=1;
     
     for ii=1:optimLog.round_num
         %fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
@@ -94,7 +94,7 @@ global outputData optimLog fitnessFun
         last_solution = optimLog.group(group_number).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         % 更新qTable每段右端点
-        fitnessFun.qTable.q(:,group_number+1) = last_result(1:6,fitnessFun.spacenum+1);
+        %fitnessFun.qTable.q(:,group_number+1) = last_result(1:6,fitnessFun.spacenum+1);
         fitnessFun.qTable.vq(:,group_number+1) = last_result(7:12,fitnessFun.spacenum+1);
         fitnessFun.qTable.aq(:,group_number+1) = last_result(13:18,fitnessFun.spacenum+1);
     end
@@ -113,8 +113,8 @@ global outputData optimLog fitnessFun
             elseif mod(iter,2)==0
                 outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; 
                 % 轨迹中各段连接点处位置应与qTable中相同
-                assert(isequal(outputData.trajectory(:,iter*fitnessFun.spacenum+1)...
-                    ,fitnessFun.qTable.q(:,iter+1)))
+                assert(norm(outputData.trajectory(:,iter*fitnessFun.spacenum+1)...
+                    -fitnessFun.qTable.q(:,iter+1))<1e-4)
             end
             outputData.segment_times(iter) = last_solution(end);
             outputData.segment_curtimes(iter+1) = outputData.segment_curtimes(iter)+outputData.segment_times(iter);
@@ -122,18 +122,12 @@ global outputData optimLog fitnessFun
     end
 end
 
-function qTable = initial_parameters(qStart, positionFinal, model)
-global optimLog
-    assert(isequal(size(positionFinal),[3,1]));
+function qTable = initial_parameters(qStart)
+global optimLog outputData
     assert(isequal(size(qStart),[1,6]));
-    pFinal = [1 0 0 0;
-              0 1 0 0;
-              0 0 1 0;
-              0 0 0 1];
-    pFinal(1:3,4) = positionFinal;
-    qFinal = model.ikunc(pFinal);
-    [qStart,qFinal] = regular_JointPos(qStart,qFinal);
-    [q, vq, aq] = jtraj(qStart,qFinal,optimLog.group_num+1);
-    qTable.q = q'; qTable.vq = vq'; qTable.aq = aq';
+    assert(isequal(size(outputData.junctionPos),[6,optimLog.group_num]));
+    qTable.q=[qStart',outputData.junctionPos];
+    qTable.vq=zeros(6,optimLog.group_num+1);
+    qTable.aq=zeros(6,optimLog.group_num+1);
     assert(size(qTable.q,1)==6);
 end

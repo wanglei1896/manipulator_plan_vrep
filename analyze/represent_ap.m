@@ -9,8 +9,8 @@ end
 plotOthers();
 %figure,
 %plotInWS();
-%figure,
-%plotInCS();
+figure,
+plotInCS();
 
 function plotOthers()
 global optimLog

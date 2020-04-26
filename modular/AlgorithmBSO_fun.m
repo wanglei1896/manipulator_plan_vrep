@@ -4,7 +4,8 @@
 
 % 返回的fitness_history与solution_history都是每次迭代中的种群最优个体数据
 % fitvec_history是多目标优化时各指标分量向量
-function [fitness_history, fitvec_history, solution_history, all_solution_history, optimization_time]...
+function [fitness_history, fitvec_history, solution_history,...
+    all_solution_history, optimization_time, all_fitness_history]...
     = AlgorithmBSO_fun(sizepop,iteration_num,solution_bound,fitnessfun)
     %% properties
     obj_sizepop = sizepop;
@@ -41,6 +42,7 @@ function [fitness_history, fitvec_history, solution_history, all_solution_histor
     fitvec_history = [];
     solution_history = zeros(obj_iteration_num, obj_dimension);
     all_solution_history = zeros(obj_iteration_num, obj_sizepop, obj_dimension);
+    all_fitness_history = zeros(obj_iteration_num, obj_sizepop);
     %% main procedure
     tic
     % 迭代寻优
@@ -57,6 +59,7 @@ function [fitness_history, fitvec_history, solution_history, all_solution_histor
         bsol=restore_bound(obj_pop(best_index,:));
         solution_history(ii,:)=bsol;
         all_solution_history(ii,:,:)=obj_pop;
+        all_fitness_history(ii,:)=1./obj_pop_fitness;
     end
     toc
     optimization_time=toc;
@@ -74,7 +77,7 @@ function [fitness_history, fitvec_history, solution_history, all_solution_histor
         pop_fitvec=[];
         for i=1:size(pop,1)
             solution=restore_bound(pop(i,:));
-            assert(solution(end)>0)
+            %assert(solution(end)>0)
             [pop_fitness(i), pop_fitvec(i,:)]= fitnessfun(solution);
         end
         %pop_fitness = [ones(length(pop),1) pop pop.^2] * [1 1 -1]';
