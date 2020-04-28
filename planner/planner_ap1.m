@@ -28,14 +28,15 @@ main();
 function main()
 global optimLog fitnessFun model outputData
     %% 算法初始化
-    iternum = 500;
+    iternum = 100;
     group_size = optimLog.group_num;
     assert(length(model.shape)==6)
-    spare_num=10; %要生成的备选解个数
+    spare_num=500; %要生成的备选解个数
     outputData.junctionPos=zeros(group_size,6,spare_num);
 
     %% 调用算法规划
     disp('planning start.');
+    progress=0;
     for i=1:group_size
         update_solution(i);
     end
@@ -49,6 +50,7 @@ global optimLog fitnessFun model outputData
         path_index=equalDivide(inputData.spacenum,group_size,group_number+1);
         fitnessFun.target_pos = inputData.path(:,path_index(1));
         count=0;
+        postures=[];
         while count<spare_num
             % 调用优化算法
             [fitness_history, fitvec_history,solution_history,optimization_time] ...
@@ -56,13 +58,16 @@ global optimLog fitnessFun model outputData
             %optimLog.group(group_number).fitness_history=[optimLog.group(group_number).fitness_history;fitness_history];
             %optimLog.group(group_number).fitvec_history=[optimLog.group(group_number).fitvec_history;fitvec_history];
             %optimLog.group(group_number).solution_history=[optimLog.group(group_number).solution_history;solution_history];
-            posture=solution_history(end,:)';
+            posture=solution_history(end,:);
             fit=fitness_history(end);
-            if fit<1e-3
+            if fit<1e-1
                 count=count+1;
-                outputData.junctionPos(group_number,:,count)=posture;
+                progress=progress+1/(spare_num*group_size);
+                disp([num2str(progress*100),'%'])
+                postures=[postures; posture];
             end
         end
+        outputData.junctionPos(group_number,:,:)=distanceSort(postures)';
     end
 
     function plot_posture()

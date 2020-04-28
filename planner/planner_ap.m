@@ -11,9 +11,6 @@ optimLog = optimLog_ap(optimLog.group_num);
 fitnessFun = fitnessFun_ap(model.km);
 for i=1:optimLog.group_num   % 为每组维护一个边界
     fitnessFun.parameter_bound(:,:,i)=[
-                    -pi, pi; -pi, pi; % q * 6
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi;
                     -pi, pi; -pi, pi; % vq * 6
                     -pi, pi; -pi, pi;
                     -pi, pi; -pi, pi;
@@ -33,6 +30,7 @@ end
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点
 fitnessFun.qTable = initial_parameters(inputData.qStart);
+fitnessFun.junctionPos = outputData.junctionPos;
 optimLog.qTable_history=fitnessFun.qTable;
 
 %% 主规划过程
@@ -41,8 +39,8 @@ main();
 function main()
 global outputData optimLog fitnessFun
     %% 算法初始化
-    sizepop = 20;
-    iternum = 20;
+    sizepop = 50;
+    iternum = 50;
     group_size = optimLog.group_num;
 
     %% 调用算法规划
@@ -68,6 +66,7 @@ global outputData optimLog fitnessFun
         global inputData
         bound=fitnessFun.parameter_bound(:,:,group_number);
         bound=reshape(bound,size(bound,1),size(bound,2));
+        %{
         if round>1
             % 利用上一轮的结果作为经验，简化本轮的优化
             last_round_sol = optimLog.group(group_number).solution_history(end,:);
@@ -79,6 +78,7 @@ global outputData optimLog fitnessFun
             fitnessFun.parameter_bound(1:6,1,group_number)=last_round_sol(1:6)'-range;
             fitnessFun.parameter_bound(1:6,2,group_number)=last_round_sol(1:6)'+range;
         end
+        %}
         fitnessFun.serial_number = group_number;
         path_index=equalDivide(inputData.spacenum,group_size,group_number);
         fitnessFun.target_path = inputData.path(:,path_index);
@@ -94,7 +94,7 @@ global outputData optimLog fitnessFun
         last_solution = optimLog.group(group_number).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         % 更新qTable每段右端点
-        %fitnessFun.qTable.q(:,group_number+1) = last_result(1:6,fitnessFun.spacenum+1);
+        fitnessFun.qTable.q(:,group_number+1) = last_result(1:6,fitnessFun.spacenum+1);
         fitnessFun.qTable.vq(:,group_number+1) = last_result(7:12,fitnessFun.spacenum+1);
         fitnessFun.qTable.aq(:,group_number+1) = last_result(13:18,fitnessFun.spacenum+1);
     end
@@ -125,8 +125,8 @@ end
 function qTable = initial_parameters(qStart)
 global optimLog outputData
     assert(isequal(size(qStart),[1,6]));
-    assert(isequal(size(outputData.junctionPos),[6,optimLog.group_num]));
-    qTable.q=[qStart',outputData.junctionPos];
+    assert(size(outputData.junctionPos,1)==optimLog.group_num);
+    qTable.q=[qStart',outputData.junctionPos(:,:,1)'];
     qTable.vq=zeros(6,optimLog.group_num+1);
     qTable.aq=zeros(6,optimLog.group_num+1);
     assert(size(qTable.q,1)==6);

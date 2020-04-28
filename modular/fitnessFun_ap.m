@@ -11,6 +11,7 @@ classdef fitnessFun_ap
         qTable; % 各轨迹段端点处的参数值（关节位置、速度、加速度）
         serial_number; %目前优化的是第几段
         target_path; %目前要优化段的目标路径
+        junctionPos; %轨迹连接点处的位姿
         parameter_bound;
     end
     
@@ -170,10 +171,14 @@ classdef fitnessFun_ap
             ax0=qTable.aq(:,Serialnumber);
 
             % 右侧端点
-            x1=qTable.q(:,Serialnumber+1);
-            vx1=parameters(7:12)';
-            t1=parameters(13)/2;
-            t2=parameters(13)/2;
+            spareNo=floor(size(obj.junctionPos,3)*parameters(end))+1;
+            if spareNo>size(obj.junctionPos,3)
+                spareNo=size(obj.junctionPos,3);
+            end
+            x1=obj.junctionPos(Serialnumber,:,spareNo)';
+            vx1=parameters(1:num_joints)';
+            t1=parameters(num_joints+1)/2;
+            t2=parameters(num_joints+1)/2;
             assert(t1>0);
             
             % 右右侧端点

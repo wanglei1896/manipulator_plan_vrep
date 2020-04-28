@@ -1,5 +1,5 @@
 % 用于显示天牛种群在迭代过程中的运动情形
-plot_group_move(1,1,2,3);
+plot_group_move(1,1,8);
 
 function plot_group_move(gnumber,dim1,dim2,dim3)
 global optimLog
