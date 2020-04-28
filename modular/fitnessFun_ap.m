@@ -4,7 +4,7 @@ classdef fitnessFun_ap
     
     properties
         % 访问全局变量太慢，所以存在这里作为私有数据
-        d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
+        d; a; alpha; base; joint_num; offset; num_joints; % 机械臂的相关参数
         linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示, XData, YData, ZData）
         linkCentre; obsCentre;
         spacenum; % 生成轨迹段数
@@ -21,6 +21,7 @@ classdef fitnessFun_ap
             obj.alpha = manipulator_model.alpha;
             obj.offset = manipulator_model.offset;
             obj.base = manipulator_model.base.t;
+            obj.num_joints = 3;
         end
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
@@ -33,9 +34,9 @@ classdef fitnessFun_ap
             [fitness_value,cost_vec] = obj.evaluateTrajectory(result,parameters);
         end
         function [evaluate_value,cost_vec] = evaluateTrajectory(obj,result,parameters)
-            ql=result(1:6,:);
-            vl=result(7:12,:);
-            al=result(13:18,:);
+            ql=result(1:obj.num_joints,:);
+            vl=result(obj.num_joints+1:obj.num_joints*2,:);
+            al=result(obj.num_joints*2+1:obj.num_joints*3,:);
             n_tj=size(ql,2); %整条轨迹上的采样点
             pos=zeros(3,n_tj); %存储整条轨迹上机械臂末端位置
             %{
@@ -62,9 +63,9 @@ classdef fitnessFun_ap
             %}
             collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
             for i=1:n_tj
-                theta=ql(:,i);
+                theta=[ql(:,i);0;0;0];
                 trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
-                for j=1:6
+                for j=1:obj.num_joints
                     tran = trans(:,:,j+1);
                     centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                     for k=1:length(obj.obstacles)
@@ -83,7 +84,7 @@ classdef fitnessFun_ap
                         end
                     end
                 end
-                pos(:,i)=trans(1:3,4,end);
+                pos(:,i)=trans(1:3,4,obj.num_joints+1);
             end
             oa=collision_count;
             %{
@@ -162,7 +163,7 @@ classdef fitnessFun_ap
             qTable = obj.qTable;
             Serialnumber = obj.serial_number;
 
-            num_joints=6;
+            num_joints=obj.num_joints;
 
             % 左侧端点从qTable中找
             x0=qTable.q(:,Serialnumber);
@@ -170,10 +171,10 @@ classdef fitnessFun_ap
             ax0=qTable.aq(:,Serialnumber);
 
             % 右侧端点来自优化向量
-            x1=parameters(1:6)';
-            vx1=parameters(7:12)';
-            t1=parameters(13)/2;
-            t2=parameters(13)/2;
+            x1=parameters(1:num_joints)';
+            vx1=parameters(num_joints+1:num_joints*2)';
+            t1=parameters(end)/2;
+            t2=parameters(end)/2;
             assert(t1>0);
             
             % 右右侧端点

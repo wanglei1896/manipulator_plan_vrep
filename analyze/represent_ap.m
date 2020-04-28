@@ -2,15 +2,15 @@
 % 优化过程中各个解代表的机械臂末端路径的变化
 %
 
-if isequal(optimLog.path_history,[])
+%if isequal(optimLog.path_history,[])
     calculateHistoy();
-end
+%end
 
 plotOthers();
 %figure,
 %plotInWS();
-%figure,
-%plotInCS();
+figure,
+plotInCS();
 
 function plotOthers()
 global optimLog
@@ -124,7 +124,7 @@ function calculateHistoy()
             ql=result(1:nj,:);
             path=[];
             for q=ql
-                Trans=fitnessFun.fastForwardTrans(q);
+                Trans=fitnessFun.fastForwardTrans([q;0;0;0]);
                 path=[path,Trans(1:3,4,7)];
             end
             optimLog.path_history(:,:,j,(ii-1)*ni*2+i)=path(:,1:fitnessFun.spacenum+1);
@@ -165,7 +165,7 @@ function calculateHistoy()
             ql=result(1:nj,:);
             path=[];
             for q=ql
-                Trans=fitnessFun.fastForwardTrans(q);
+                Trans=fitnessFun.fastForwardTrans([q;0;0;0]);
                 path=[path,Trans(1:3,4,7)];
             end
             regPath=regular_path(path,size(path,2)-1);

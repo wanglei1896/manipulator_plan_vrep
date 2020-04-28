@@ -12,12 +12,10 @@ optimLog = optimLog_ap(optimLog.group_num);
 fitnessFun = fitnessFun_ap(model.km);
 for i=1:optimLog.group_num   % 为每组维护一个边界
     fitnessFun.parameter_bound(:,:,i)=[
-                    -pi, pi; -pi, pi; % q * 6
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi; % vq * 6
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi;
+                    -pi, pi; -pi, pi; % q * 3
+                    -pi, pi; 
+                    -pi, pi; -pi, pi; % vq * 3
+                    -pi, pi; 
                     0.1, 10]; % time
 end
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
@@ -44,6 +42,7 @@ global outputData optimLog fitnessFun
     sizepop = 20;
     iternum = 20;
     group_size = optimLog.group_num;
+    num_joint = 3;
 
     %% 调用算法规划
     disp('planning start.');
@@ -76,8 +75,8 @@ global outputData optimLog fitnessFun
             range=last_round_fitvec(16)*5;
             %range=(bound(1,2)-bound(1,1))/4;
             disp([num2str(group_number),'  ',num2str(range)])
-            fitnessFun.parameter_bound(1:6,1,group_number)=last_round_sol(1:6)'-range;
-            fitnessFun.parameter_bound(1:6,2,group_number)=last_round_sol(1:6)'+range;
+            fitnessFun.parameter_bound(1:num_joint,1,group_number)=last_round_sol(1:num_joint)'-range;
+            fitnessFun.parameter_bound(1:num_joint,2,group_number)=last_round_sol(1:num_joint)'+range;
         end
         fitnessFun.serial_number = group_number;
         path_index=equalDivide(inputData.spacenum,group_size,group_number);
@@ -94,9 +93,9 @@ global outputData optimLog fitnessFun
         last_solution = optimLog.group(group_number).solution_history(end,:);
         [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
         % 更新qTable每段右端点
-        fitnessFun.qTable.q(:,group_number+1) = last_result(1:6,fitnessFun.spacenum+1);
-        fitnessFun.qTable.vq(:,group_number+1) = last_result(7:12,fitnessFun.spacenum+1);
-        fitnessFun.qTable.aq(:,group_number+1) = last_result(13:18,fitnessFun.spacenum+1);
+        fitnessFun.qTable.q(:,group_number+1) = last_result(1:num_joint,fitnessFun.spacenum+1);
+        fitnessFun.qTable.vq(:,group_number+1) = last_result(num_joint+1:num_joint*2,fitnessFun.spacenum+1);
+        fitnessFun.qTable.aq(:,group_number+1) = last_result(num_joint*2+1:num_joint*3,fitnessFun.spacenum+1);
     end
 
     function get_trajectory()
@@ -109,9 +108,9 @@ global outputData optimLog fitnessFun
             last_solution = optimLog.group(iter).solution_history(end,:);
             [~, last_result] = fitnessFun.convertSolutionToTrajectory(last_solution);
             if iter==1
-                outputData.trajectory = [outputData.trajectory, last_result(1:6,2:fitnessFun.spacenum+1)];%舍弃各组的第一个点，以免重复
+                outputData.trajectory = [outputData.trajectory, last_result(1:num_joint,2:fitnessFun.spacenum+1)];%舍弃各组的第一个点，以免重复
             elseif mod(iter,2)==0
-                outputData.trajectory = [outputData.trajectory, last_result(1:6,2:end)]; 
+                outputData.trajectory = [outputData.trajectory, last_result(1:num_joint,2:end)]; 
                 % 轨迹中各段连接点处位置应与qTable中相同
                 assert(isequal(outputData.trajectory(:,iter*fitnessFun.spacenum+1)...
                     ,fitnessFun.qTable.q(:,iter+1)))
@@ -125,15 +124,15 @@ end
 function qTable = initial_parameters(qStart, positionFinal, model)
 global optimLog
     assert(isequal(size(positionFinal),[3,1]));
-    assert(isequal(size(qStart),[1,6]));
+    assert(isequal(size(qStart),[1,3]));
     pFinal = [1 0 0 0;
               0 1 0 0;
               0 0 1 0;
               0 0 0 1];
     pFinal(1:3,4) = positionFinal;
     qFinal = model.ikunc(pFinal);
-    [qStart,qFinal] = regular_JointPos(qStart,qFinal);
+    [qStart,qFinal] = regular_JointPos(qStart,qFinal(1:3));
     [q, vq, aq] = jtraj(qStart,qFinal,optimLog.group_num+1);
     qTable.q = q'; qTable.vq = vq'; qTable.aq = aq';
-    assert(size(qTable.q,1)==6);
+    assert(size(qTable.q,1)==3);
 end

@@ -29,3 +29,4 @@ end
 inputData.pStart = eye(4);
 inputData.pStart(1:3,4) = inputData.path(:,1);
 inputData.qStart = model.km.ikunc(inputData.pStart);
+inputData.qStart = inputData.qStart(1:3);
