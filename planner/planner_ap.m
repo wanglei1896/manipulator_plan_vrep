@@ -72,8 +72,8 @@ global outputData optimLog fitnessFun
             last_round_sol = optimLog.group(group_number).solution_history(end,:);
             last_round_fitvec = optimLog.group(group_number).fitvec_history(end,:);
             assert(length(last_round_fitvec)==26 || length(last_round_fitvec)==16)
-            range=last_round_fitvec(16)*5;
-            %range=(bound(1,2)-bound(1,1))/4;
+            %range=last_round_fitvec(16)*5;
+            range=(bound(1,2)-bound(1,1))/4;
             disp([num2str(group_number),'  ',num2str(range)])
             fitnessFun.parameter_bound(1:num_joint,1,group_number)=last_round_sol(1:num_joint)'-range;
             fitnessFun.parameter_bound(1:num_joint,2,group_number)=last_round_sol(1:num_joint)'+range;

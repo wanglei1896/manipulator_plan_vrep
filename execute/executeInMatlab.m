@@ -7,7 +7,7 @@ global model outputData
 %使用toolbox自带的点到点轨迹
 %outputData_bench.trajectory = jtraj(inputData.qStart,inputData.qFinal,20)';
 
-
+%{
 %机械臂运行
 model.km.plot(outputData.trajectory(:,1)','trail',{'r'})
 hold on
@@ -15,6 +15,7 @@ plot3(inputData.obstacles(1).vex(1,:),inputData.obstacles(1).vex(2,:),inputData.
 plot3(inputData.obstacles(2).vex(1,:),inputData.obstacles(2).vex(2,:),inputData.obstacles(2).vex(3,:))
 plot3(inputData.obstacles(3).vex(1,:),inputData.obstacles(3).vex(2,:),inputData.obstacles(3).vex(3,:))
 model.km.plot(outputData.trajectory(:,:)','trail',{'r'});
+%}
 
 figure,
 plotJoint_Time(outputData);
@@ -22,13 +23,14 @@ plotJoint_Time(outputData);
 %关节运动图
 function plotJoint_Time(data)
     segnum = length(data.segment_times);
+    joint_num = 3;
     spacePerSeg=floor(data.spacenum/segnum);
     t = linspace(data.segment_curtimes(1),data.segment_curtimes(2),spacePerSeg+1);
     for i=2:segnum
         temp = linspace(data.segment_curtimes(i),data.segment_curtimes(i+1),spacePerSeg+1);
         t=[t, temp(2:end)];
     end
-    plot(t, data.trajectory(1:6,:)','-');
+    plot(t, data.trajectory(1:joint_num,:)','-');
     %plot(linspace(0,data.total_time,data.spacenum+1),data.trajectory(1:6,:)','.');
     legend joint1 joint2 joint3 joint4 joint5 joint6
     hold on,
