@@ -9,8 +9,8 @@ end
 plotOthers();
 %figure,
 %plotInWS();
-%figure,
-%plotInCS();
+figure,
+plotInCS();
 
 function plotOthers()
 global optimLog
@@ -95,7 +95,7 @@ function plotInCS()
                 plot((ppg-1)*(j-1)+2:(ppg-1)*j,optimLog.regPath_history(:,2:end-1,j,i)',[path_color, 'x'])
                 plot((ppg-1)*j+1,optimLog.regPath_history(:,end,j,i)','d')
             end
-            axis([1,outputData.spacenum+1,-1,1])
+            axis([1,outputData.spacenum+1,-pi,pi])
         end
         text(0,-0.8,['iteration times: ', num2str(i)],'VerticalAlignment','top','FontSize',12);
         hold off

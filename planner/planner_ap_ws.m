@@ -18,7 +18,7 @@ fitnessFun.parameter_bound=[-1, 1; -1, 1; -1, 1; % p * 3
                             -1/4, 1/4; -1/4, 1/4; -1/4, 1/4;
                             -1/4, 1/4; -1/4, 1/4; -1/4, 1/4; % ap * 3
                             -1/4, 1/4; -1/4, 1/4; -1/4, 1/4;
-                            0.1, 10]; % time
+                            0.1, 10]*pi; % time
 fitnessFun.spacenum = outputData.spacenum/optimLog.group_num;
 fitnessFun.nd = size(inputData.path,1);
 
