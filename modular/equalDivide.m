@@ -6,7 +6,7 @@
 function index = equalDivide(length, group_num, i)
     assert(length>0 && group_num>0 && i>0 && i<=group_num+1)
     if i==group_num+1
-       index = length;
+       index = length+1;
        return;
     end
     remain = mod(length,group_num);

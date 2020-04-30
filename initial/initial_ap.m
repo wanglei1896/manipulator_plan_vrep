@@ -8,9 +8,9 @@ isFromVrep=true;
 
 %%% 初始化
 model = model_ur5();
-optimLog = optimLog_ap(4);   %优化有几个组
+optimLog = optimLog_ap(20);   %优化有几个组
 inputData = input_ap([[0.3;0.4;0], [0.3;0.4;0]+1*[0.3;-0.4;0]],... %输入的路径(默认)
-                    optimLog.group_num*10);   %输入路径规范化后的采样段数 
+                    optimLog.group_num);   %输入路径规范化后的采样段数 
 % isTest开启时元循环，将上次优化的结果路径作为本次的目标路径
 if ~isequal(outputData,[]) && ~isequal(outputData.endPath,[]) && isTest
     inputData=input_ap(outputData.endPath,20);
