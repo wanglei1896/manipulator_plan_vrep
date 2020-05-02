@@ -33,11 +33,11 @@ classdef fitnessFun_ap
             [fitness_value,cost_vec] = obj.evaluateTrajectory(result,parameters);
         end
         function [evaluate_value,cost_vec] = evaluateTrajectory(obj,result,parameters)
-            ql=result(1:6,:);
-            vl=result(7:12,:);
-            al=result(13:18,:);
+            ql=result(1:obj.joint_num,:);
+            vl=result(obj.joint_num+1:2*obj.joint_num,:);
+            al=result(2*obj.joint_num:3*obj.joint_num,:);
             n_tj=size(ql,2); %整条轨迹上的采样点
-            pos=zeros(3,n_tj); %存储整条轨迹上机械臂末端位置
+            %pos=zeros(3,n_tj); %存储整条轨迹上机械臂末端位置
             %{
               ft表示轨迹中速度/加速度超过max的轨迹片段的各采样点速度/加速度之和。
               此指标可发现轨迹中速度/加速度过高的片段，并引导agent减少或改善这些片段；
@@ -61,6 +61,7 @@ classdef fitnessFun_ap
               oa表示避障指标
             %}
             collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+            %{
             for i=1:n_tj
                 theta=ql(:,i);
                 trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
@@ -85,6 +86,7 @@ classdef fitnessFun_ap
                 end
                 pos(:,i)=trans(1:3,4,end);
             end
+            %}
             oa=collision_count;
             %{
               fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
@@ -95,7 +97,7 @@ classdef fitnessFun_ap
             else
                 sp=obj.spacenum*2;
             end
-            regPath = regular_path(obj.target_path, sp);
+            regPath = regular_path(obj.target_path(1:obj.joint_num,:), sp);
             regPos_1 = regular_path(ql(:,1:floor(size(ql,2)/2)),sp/2);
             regPos_2 = regular_path(ql(:,floor(size(ql,2)/2):end),sp/2); %相应分成两部分
             regPos = [regPos_1, regPos_2(:,2:end)];
@@ -104,17 +106,18 @@ classdef fitnessFun_ap
             fdt=norm(deltas(:,1));
             for delta=deltas(:,2:end)
                 Pos_punishment=[Pos_punishment,norm(delta)];
-                if sum(delta)>fdt
-                    fdt=norm(delta);
-                end
+                fdt=fdt+norm(delta);
+                %if norm(delta)>fdt
+                %    fdt=norm(delta);
+                %end
             end
-            fdt=sum(sum(deltas));
             %{
               fdis表示机械臂末端划过的轨迹长度
-            %}
             dx=diff(pos(1,:)); dy=diff(pos(2,:)); dz=diff(pos(3,:));
             dis=sqrt(dx.^2+dy.^2+dz.^2);
             fdis=sum(dis);
+            %}
+            fdis=0;
             %{
               time表示轨迹运动的时间
             %}
@@ -162,7 +165,7 @@ classdef fitnessFun_ap
             qTable = obj.qTable;
             Serialnumber = obj.serial_number;
 
-            num_joints=6;
+            num_joints=obj.joint_num;
 
             % 左侧端点从qTable中找
             x0=qTable.q(:,Serialnumber);

@@ -36,15 +36,15 @@ function plotInWS()
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'k')
         hold on
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'rx')
-        plot3(optimLog.path_history(1,1,1,i),optimLog.path_history(2,1,1,i)...
-            ,optimLog.path_history(3,1,1,i),'ok');
-        plot3(optimLog.path_history(1,end,end,i),optimLog.path_history(2,end,end,i)...
-            ,optimLog.path_history(3,end,end,i),'dk');
+        plot3(optimLog.workPath_history(1,1,1,i),optimLog.workPath_history(2,1,1,i)...
+            ,optimLog.workPath_history(3,1,1,i),'ok');
+        plot3(optimLog.workPath_history(1,end,end,i),optimLog.workPath_history(2,end,end,i)...
+            ,optimLog.workPath_history(3,end,end,i),'dk');
         for j=1:ng
-            plot3(optimLog.path_history(1,:,j,i),optimLog.path_history(2,:,j,i)...
-                ,optimLog.path_history(3,:,j,i),'r')
-            plot3(optimLog.regPath_history(1,:,j,i),optimLog.regPath_history(2,:,j,i)...
-                ,optimLog.regPath_history(3,:,j,i),'gx')
+            plot3(optimLog.workPath_history(1,:,j,i),optimLog.workPath_history(2,:,j,i)...
+                ,optimLog.workPath_history(3,:,j,i),'r')
+            plot3(optimLog.workPath_history(1,:,j,i),optimLog.workPath_history(2,:,j,i)...
+                ,optimLog.workPath_history(3,:,j,i),'gx')
         end
         text(-1,-1,['iteration times: ', num2str(i)],'VerticalAlignment','top','FontSize',12);
         hold off
@@ -161,19 +161,19 @@ function calculateHistoy()
         fitnessFun.qTable.q(:,group_num+1)=result(1:nj,fitnessFun.spacenum+1);
         fitnessFun.qTable.vq(:,group_num+1)=result(nj+1:nj*2,fitnessFun.spacenum+1);
         fitnessFun.qTable.aq(:,group_num+1)=result(nj*2+1:nj*3,fitnessFun.spacenum+1);
-        ql=result(1:nj,:);
+        ql=result(1:6,:);
         path=[];
         for q=ql
             Trans=fitnessFun.fastForwardTrans(q);
             path=[path,Trans(1:3,4,7)];
         end
         optimLog.jointPath_history(:,:,group_num,(ii-1)*ni*2+iter)=...
-            regular_path(ql(:,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
+            regular_path(result(1:nj,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
         optimLog.workPath_history(:,:,group_num,(ii-1)*ni*2+iter)=...
             regular_path(path(:,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
         if group_num+1<=n
             optimLog.jointPath_history(:,:,group_num+1,(ii-1)*ni*2+iter)=...
-            regular_path(ql(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
+            regular_path(result(1:nj,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
             optimLog.workPath_history(:,:,group_num+1,(ii-1)*ni*2+iter)=...
                 regular_path(path(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
         end

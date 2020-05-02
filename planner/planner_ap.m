@@ -1,10 +1,10 @@
 %% along path 的规划过程
 % 
-global outputData inputData optimLog model fitnessFun
+global outputData inputData optimLog model fitnessFun joint_num
 
 %% optimLog更新，因此重置受其影响的变量
 % optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
-optimLog = optimLog_ap(2); %优化有几个组
+optimLog = optimLog_ap(6); %优化有几个组
 
 %% 配置代价函数
 % 轨迹编码
@@ -20,6 +20,7 @@ for i=1:optimLog.group_num   % 为每组维护一个边界
                     0.1, 10]; % time
 end
 fitnessFun.spacenum = 10;
+fitnessFun.joint_num = joint_num;
 fitnessFun.obstacles=inputData.obstacles;
 fitnessFun.linkShapes = model.shape;
 for i=1:inputData.obstacle_num
@@ -38,16 +39,15 @@ optimLog.qTable_history=fitnessFun.qTable;
 main();
 
 function main()
-global outputData optimLog fitnessFun
+global outputData optimLog fitnessFun joint_num
     %% 算法初始化
-    sizepop = 20;
-    iternum = 20;
+    sizepop = 100;
+    iternum = 40;
     group_size = optimLog.group_num;
-    joint_num = 6;
 
     %% 调用算法规划
     disp('planning start.');
-    optimLog.round_num=2;
+    optimLog.round_num=1;
     
     for ii=1:optimLog.round_num
         %fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
@@ -73,12 +73,13 @@ global outputData optimLog fitnessFun
             last_round_sol = optimLog.group(group_number).solution_history(end,:);
             last_round_fitvec = optimLog.group(group_number).fitvec_history(end,:);
             assert(length(last_round_fitvec)==26 || length(last_round_fitvec)==16)
-            %range=last_round_fitvec(16)*5;
+            %range=last_round_fitvec(16)*6;
             range=(bound(1,2)-bound(1,1))/4;
             disp([num2str(group_number),'  ',num2str(range)])
-            fitnessFun.parameter_bound(1:joint_num,1,group_number)=last_round_sol(1:joint_num)'-range;
-            fitnessFun.parameter_bound(1:joint_num,2,group_number)=last_round_sol(1:joint_num)'+range;
-        end
+            bound(1:joint_num,1)=last_round_sol(1:joint_num)'-range;
+            bound(1:joint_num,2)=last_round_sol(1:joint_num)'+range;
+            fitnessFun.parameter_bound(:,:,group_number)=bound;
+        end        
 
         fitnessFun.serial_number = group_number;
         path_index=equalDivide(inputData.spacenum,group_size,group_number);
@@ -124,11 +125,15 @@ global outputData optimLog fitnessFun
 end
 
 function qTable = initial_parameters(qStart)
-global optimLog outputData inputData
-    assert(isequal(size(qStart),[1,6]));
+global optimLog outputData inputData joint_num
+    assert(isequal(size(qStart),[1,joint_num]));
     assert(size(outputData.junctionPos,2)==inputData.spacenum+1);
-    qTable.q=[qStart',zeros(6,optimLog.group_num)];
-    qTable.vq=zeros(6,optimLog.group_num+1);
-    qTable.aq=zeros(6,optimLog.group_num+1);
-    assert(size(qTable.q,1)==6);
+    qTable.q=qStart';
+    for i=1:optimLog.group_num
+        index=equalDivide(inputData.spacenum,optimLog.group_num,i+1);
+        qTable.q=[qTable.q, outputData.junctionPos(1:joint_num,index(1))];
+    end
+    qTable.vq=zeros(joint_num,optimLog.group_num+1);
+    qTable.aq=zeros(joint_num,optimLog.group_num+1);
+    assert(size(qTable.q,1)==joint_num);
 end

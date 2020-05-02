@@ -1,7 +1,8 @@
 %% path tracking规划的第一步
 %   确定各个轨迹连接点处的关节位置
-global inputData optimLog model fitnessFun
+global inputData optimLog model fitnessFun joint_num
 
+joint_num = 6;
 %% optimLog更新，因此重置受其影响的变量
 % optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
 optimLog = optimLog_ap(optimLog.group_num);
@@ -10,7 +11,7 @@ optimLog = optimLog_ap(optimLog.group_num);
 % 轨迹编码
 fitnessFun = fitnessFun_ap1(model.km);
 fitnessFun.spacenum=1;
-fitnessFun.joint_num=6;
+fitnessFun.joint_num=joint_num;
 fitnessFun.jointPath=zeros(fitnessFun.joint_num,inputData.spacenum+1);
 fitnessFun.parameter_bound=ones(fitnessFun.joint_num*fitnessFun.spacenum,1)*[-2*pi, 2*pi];  %q * 6
 fitnessFun.obstacles=inputData.obstacles;
@@ -26,10 +27,9 @@ end
 main();
 
 function main()
-global optimLog fitnessFun model outputData inputData
+global optimLog fitnessFun model outputData inputData joint_num
     %% 算法初始化
     iternum = 300;
-    joint_num = 6;
     assert(length(model.shape)==joint_num)
     fitnessFun.jointPath(:,1)=inputData.qStart';
 
