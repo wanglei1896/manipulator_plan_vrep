@@ -2,15 +2,15 @@
 % 优化过程中各个解代表的机械臂末端路径的变化
 %
 
-if isequal(optimLog.path_history,[])
+%if isequal(optimLog.path_history,[])
     calculateHistoy();
-end
+%end
 
 plotOthers();
 %figure,
 %plotInWS();
 figure,
-plotInCS();
+plotInCS('c');
 
 function plotOthers()
 global optimLog
@@ -56,27 +56,36 @@ function plotInWS()
     end
 end
 
-function plotInCS()
-    global optimLog inputData outputData
+function plotInCS(opt)
+    global optimLog inputData fitnessFun outputData
+    assert(opt=='w'||opt=='c')
     ni=length(optimLog.group(1).fitness_history)/optimLog.round_num;
     ng=optimLog.group_num;
-    ppg = outputData.spacenum/optimLog.group_num+1;
-    targetPath = regular_path(inputData.path, outputData.spacenum);
+    ppg = fitnessFun.spacenum+1;
+    if opt=='w'
+        targetPath = regular_path(inputData.path, fitnessFun.spacenum*ng);
+        path_history = optimLog.workPath_history;
+        ylimits=[-1, 1];
+    elseif opt=='c'
+        targetPath = regular_path(outputData.junctionPos, fitnessFun.spacenum*ng);
+        path_history = optimLog.jointPath_history;
+        ylimits=[-pi, pi];
+    end
     for i=1:2*ni*optimLog.round_num
         plot(targetPath','k+')
         hold on
         myplot([],targetPath')
         for j=1:ng
             if j==1
-                myplot(1:ppg,optimLog.regPath_history(:,:,j,i)')
-                plot(1:ppg-1,optimLog.regPath_history(:,1:end-1,j,i)','rx')
-                plot(ppg,optimLog.regPath_history(:,end,j,i)','d')
+                myplot(1:ppg,path_history(:,:,j,i)')
+                plot(1:ppg-1,path_history(:,1:end-1,j,i)','rx')
+                plot(ppg,path_history(:,end,j,i)','d')
             else
-                myplot(ppg*(j-1)+2-j:ppg*j+1-j,optimLog.regPath_history(:,:,j,i)')
-                plot((ppg-1)*(j-1)+2:(ppg-1)*j,optimLog.regPath_history(:,2:end-1,j,i)','rx')
-                plot((ppg-1)*j+1,optimLog.regPath_history(:,end,j,i)','d')
+                myplot(ppg*(j-1)+2-j:ppg*j+1-j,path_history(:,:,j,i)')
+                plot((ppg-1)*(j-1)+2:(ppg-1)*j,path_history(:,2:end-1,j,i)','rx')
+                plot((ppg-1)*j+1,path_history(:,end,j,i)','d')
             end
-            axis([1,outputData.spacenum+1,-1,1])
+            axis([1,fitnessFun.spacenum*ng+1,ylimits])
         end
         text(0,-0.8,['iteration times: ', num2str(i)],'VerticalAlignment','top','FontSize',12);
         hold off
@@ -113,81 +122,72 @@ function calculateHistoy()
         end
         sum=0;
         for j=1:2:n
-            fitnessFun.serial_number=j;
-            path_index=equalDivide(inputData.spacenum,n,j);
-            fitnessFun.target_path=inputData.path(:,path_index);
-            solution=optimLog.group(j).solution_history((ii-1)*ni+i,:);
-            [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
-            fitnessFun.qTable.q(:,j+1)=result(1:nj,fitnessFun.spacenum+1);
-            fitnessFun.qTable.vq(:,j+1)=result(nj+1:nj*2,fitnessFun.spacenum+1);
-            fitnessFun.qTable.aq(:,j+1)=result(nj*2+1:nj*3,fitnessFun.spacenum+1);
-            ql=result(1:nj,:);
-            path=[];
-            for q=ql
-                Trans=fitnessFun.fastForwardTrans(q);
-                path=[path,Trans(1:3,4,7)];
-            end
-            optimLog.path_history(:,:,j,(ii-1)*ni*2+i)=path(:,1:fitnessFun.spacenum+1);
-            optimLog.regPath_history(:,:,j,(ii-1)*ni*2+i)=...
-                regular_path(path(:,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
-            if j+1<=n
-                optimLog.path_history(:,:,j+1,(ii-1)*ni*2+i)=path(:,fitnessFun.spacenum+1:end);
-                optimLog.regPath_history(:,:,j+1,(ii-1)*ni*2+i)=...
-                    regular_path(path(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
-            end
-            sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
-            if j==1 && ii==1
-                assert(abs(sum-optimLog.group(1).fitness_history(i))<1e-4,...
-                	"%d %f  %f\n",i,sum,optimLog.group(1).fitness_history(i));
-            end
-            if j==1 && i==ni   %第一轮最后一次迭代时第一段轨迹的代价值
-                fitnessFun.target_path=inputData.path(:,path_index(1:floor(length(path_index)/2+1)));
-                [fit, cost_vec]=fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
-                firstSegCost=1/fit-cost_vec(end);
-            end
+            [cost, firstSegCost]=handle_group(i,j);
+            sum=sum+cost;
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
         optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
     end
     for i=(ni+1):(2*ni)
-        optimLog.path_history(:,:,1,(ii-1)*ni*2+i)=optimLog.path_history(:,:,1,(ii-1)*ni*2+ni);
-        optimLog.regPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.regPath_history(:,:,1,(ii-1)*ni*2+ni);
+        optimLog.jointPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.jointPath_history(:,:,1,(ii-1)*ni*2+ni);
+        optimLog.workPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.workPath_history(:,:,1,(ii-1)*ni*2+ni);
         sum=firstSegCost;  %第一段轨迹的代价值
         for j=2:2:n
-            fitnessFun.serial_number=j;
-            path_index=equalDivide(inputData.spacenum,n,j);
-            fitnessFun.target_path=inputData.path(:,path_index);
-            solution=optimLog.group(j).solution_history((ii-1)*ni+i-ni,:);
-            [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
-            fitnessFun.qTable.q(:,j+1)=result(1:nj,fitnessFun.spacenum+1);
-            fitnessFun.qTable.vq(:,j+1)=result(nj+1:nj*2,fitnessFun.spacenum+1);
-            fitnessFun.qTable.aq(:,j+1)=result(nj*2+1:nj*3,fitnessFun.spacenum+1);
-            ql=result(1:nj,:);
-            path=[];
-            for q=ql
-                Trans=fitnessFun.fastForwardTrans(q);
-                path=[path,Trans(1:3,4,7)];
-            end
-            regPath=regular_path(path,size(path,2)-1);
-            optimLog.path_history(:,:,j,(ii-1)*ni*2+i)=path(:,1:fitnessFun.spacenum+1);
-            optimLog.regPath_history(:,:,j,(ii-1)*ni*2+i)=...
-                regular_path(path(:,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
-            if j+1<=n
-                optimLog.path_history(:,:,j+1,(ii-1)*ni*2+i)=path(:,fitnessFun.spacenum+1:end);
-                optimLog.regPath_history(:,:,j+1,(ii-1)*ni*2+i)=...
-                    regular_path(path(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
-            end
-            sum=sum+1/fitnessFun.evaluateTrajectory(result,solution);
+            cost=handle_group(i,j);
+            sum=sum+cost;
         end
         optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
         optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
     end
     end
     toc
-    endPath=optimLog.path_history(:,1,1,end);
+    endPath=optimLog.workPath_history(:,1,1,end);
     for i=1:n
-        path=optimLog.path_history(:,:,i,end);
-        endPath=[endPath,path(:,2:end)];
+        p=optimLog.workPath_history(:,:,i,end);
+        endPath=[endPath,p(:,2:end)];
     end
     outputData.endPath=endPath;
+    
+    function [cost, firstSegCost]=handle_group(iter, group_num)
+        fitnessFun.serial_number=group_num;
+        path_index=equalDivide(inputData.spacenum,n,group_num);
+        fitnessFun.target_path=outputData.junctionPos(:,path_index);
+        index=(ii-1)*ni+iter;
+        if iter>ni
+            index=index-ni;
+        end
+        solution=optimLog.group(group_num).solution_history(index,:);
+        [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
+        fitnessFun.qTable.q(:,group_num+1)=result(1:nj,fitnessFun.spacenum+1);
+        fitnessFun.qTable.vq(:,group_num+1)=result(nj+1:nj*2,fitnessFun.spacenum+1);
+        fitnessFun.qTable.aq(:,group_num+1)=result(nj*2+1:nj*3,fitnessFun.spacenum+1);
+        ql=result(1:nj,:);
+        path=[];
+        for q=ql
+            Trans=fitnessFun.fastForwardTrans(q);
+            path=[path,Trans(1:3,4,7)];
+        end
+        optimLog.jointPath_history(:,:,group_num,(ii-1)*ni*2+iter)=...
+            regular_path(ql(:,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
+        optimLog.workPath_history(:,:,group_num,(ii-1)*ni*2+iter)=...
+            regular_path(path(:,1:fitnessFun.spacenum+1),fitnessFun.spacenum);
+        if group_num+1<=n
+            optimLog.jointPath_history(:,:,group_num+1,(ii-1)*ni*2+iter)=...
+            regular_path(ql(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
+            optimLog.workPath_history(:,:,group_num+1,(ii-1)*ni*2+iter)=...
+                regular_path(path(:,fitnessFun.spacenum+1:end),fitnessFun.spacenum);
+        end
+        cost=1/fitnessFun.evaluateTrajectory(result,solution);
+        if group_num==1 && ii==1
+            assert(abs(cost-optimLog.group(1).fitness_history(iter))<1e-4,...
+                "%d %f  %f\n",iter,cost,optimLog.group(1).fitness_history(iter));
+        end
+        if group_num==1 && iter==ni   %第一轮最后一次迭代时第一段轨迹的代价值
+            fitnessFun.target_path=outputData.junctionPos(:,path_index);
+            [fit, cost_vec]=fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
+            firstSegCost=1/fit-cost_vec(end);
+        else
+            firstSegCost=-1;
+        end
+    end
 end

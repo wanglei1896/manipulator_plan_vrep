@@ -18,7 +18,7 @@ end
 outputData = output_multiSeg();
 
 %%% 默认
-outputData.spacenum = optimLog.group_num*10;
+outputData.spacenum = 100;
 
 %%% 从vrep中读取数据
 if isFromVrep

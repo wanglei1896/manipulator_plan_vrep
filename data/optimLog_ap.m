@@ -10,7 +10,7 @@ function result = optimLog_ap(group_num)
     end
     result.sum.fitness_history = [];
     result.qTable_history = [];
-    result.path_history = [];
-    result.regPath_history = [];
+    result.jointPath_history = [];
+    result.workPath_history = [];
 end
 

@@ -10,8 +10,7 @@ classdef fitnessFun_ap
         spacenum; % 生成轨迹段数
         qTable; % 各轨迹段端点处的参数值（关节位置、速度、加速度）
         serial_number; %目前优化的是第几段
-        target_path; %目前要优化段的目标路径
-        junctionPos; %轨迹连接点处的位姿
+        target_path; %目前要优化段的目标路径(关节空间)
         parameter_bound;
     end
     
@@ -97,8 +96,8 @@ classdef fitnessFun_ap
                 sp=obj.spacenum*2;
             end
             regPath = regular_path(obj.target_path, sp);
-            regPos_1 = regular_path(pos(:,1:floor(size(ql,2)/2)),sp/2);
-            regPos_2 = regular_path(pos(:,floor(size(ql,2)/2):end),sp/2); %相应分成两部分
+            regPos_1 = regular_path(ql(:,1:floor(size(ql,2)/2)),sp/2);
+            regPos_2 = regular_path(ql(:,floor(size(ql,2)/2):end),sp/2); %相应分成两部分
             regPos = [regPos_1, regPos_2(:,2:end)];
             deltas=abs(regPath-regPos);
             Pos_punishment=[];
@@ -171,14 +170,10 @@ classdef fitnessFun_ap
             ax0=qTable.aq(:,Serialnumber);
 
             % 右侧端点
-            spareNo=floor(size(obj.junctionPos,3)*parameters(end))+1;
-            if spareNo>size(obj.junctionPos,3)
-                spareNo=size(obj.junctionPos,3);
-            end
-            x1=obj.junctionPos(Serialnumber,:,spareNo)';
-            vx1=parameters(1:num_joints)';
-            t1=parameters(num_joints+1)/2;
-            t2=parameters(num_joints+1)/2;
+            x1=parameters(1:num_joints)';
+            vx1=parameters(num_joints+1:num_joints*2)';
+            t1=parameters(end)/2;
+            t2=parameters(end)/2;
             assert(t1>0);
             
             % 右右侧端点
