@@ -21,6 +21,7 @@ function send2vrep(vrep, clientID)
 global outputData
 %     diseredPath=inputData.path;
     joint_angle=outputData.trajectory;
+    %joint_angle=outputData.jointPath;
     try
         % get handle
         for i=1:6
@@ -31,7 +32,7 @@ global outputData
         %Set the position of every joint
         while(vrep.simxGetConnectionId(clientID) ~= -1) % while v-rep connection is still active
             vrep.simxSetIntegerSignal(clientID,'SIG_execute',1,vrep.simx_opmode_oneshot);
-            for i=1:outputData.spacenum+1
+            for i=1:size(joint_angle,2)-1
                 vrep.simxPauseCommunication(clientID,1);
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(1),joint_angle(1,i),vrep.simx_opmode_oneshot);
                 vrep.simxSetJointPosition(clientID,handle_rigArmjoint(2),joint_angle(2,i),vrep.simx_opmode_oneshot);
@@ -48,7 +49,8 @@ global outputData
         end
     catch e
         vrep.simxPauseCommunication(clientID,0);
-        disp(e);
+        disp(['error in "', e.stack(1).name, '": line ', num2str(e.stack(1).line)])
+        disp(e.message)
     end
     vrep.simxSetIntegerSignal(clientID,'SIG_execute',0,vrep.simx_opmode_oneshot);
 end

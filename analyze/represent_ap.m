@@ -67,7 +67,7 @@ function plotInCS(opt)
         path_history = optimLog.workPath_history;
         ylimits=[-1, 1];
     elseif opt=='c'
-        targetPath = regular_path(outputData.junctionPos, fitnessFun.spacenum*ng);
+        targetPath = outputData.jointPath;
         path_history = optimLog.jointPath_history;
         ylimits=[-pi, pi];
     end
@@ -116,29 +116,29 @@ function calculateHistoy()
     fitnessFun.qTable = optimLog.qTable_history(1);
     tic
     for ii=1:optimLog.round_num
-    for i=1:ni
-        if i==ni && ii==3
-            disp('')
+        for i=1:ni
+            if i==ni && ii==3
+                disp('')
+            end
+            sum=0;
+            for j=1:2:n
+                [cost, firstSegCost]=handle_group(i,j);
+                sum=sum+cost;
+            end
+            optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
+            optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
         end
-        sum=0;
-        for j=1:2:n
-            [cost, firstSegCost]=handle_group(i,j);
-            sum=sum+cost;
+        for i=(ni+1):(2*ni)
+            optimLog.jointPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.jointPath_history(:,:,1,(ii-1)*ni*2+ni);
+            optimLog.workPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.workPath_history(:,:,1,(ii-1)*ni*2+ni);
+            sum=firstSegCost;  %第一段轨迹的代价值
+            for j=2:2:n
+                cost=handle_group(i,j);
+                sum=sum+cost;
+            end
+            optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
+            optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
         end
-        optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
-        optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
-    end
-    for i=(ni+1):(2*ni)
-        optimLog.jointPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.jointPath_history(:,:,1,(ii-1)*ni*2+ni);
-        optimLog.workPath_history(:,:,1,(ii-1)*ni*2+i)=optimLog.workPath_history(:,:,1,(ii-1)*ni*2+ni);
-        sum=firstSegCost;  %第一段轨迹的代价值
-        for j=2:2:n
-            cost=handle_group(i,j);
-            sum=sum+cost;
-        end
-        optimLog.qTable_history((ii-1)*ni*2+i+1)=fitnessFun.qTable;
-        optimLog.sum.fitness_history((ii-1)*ni*2+i)=sum;
-    end
     end
     toc
     endPath=optimLog.workPath_history(:,1,1,end);
@@ -151,13 +151,13 @@ function calculateHistoy()
     function [cost, firstSegCost]=handle_group(iter, group_num)
         fitnessFun.serial_number=group_num;
         path_index=equalDivide(inputData.spacenum,n,group_num);
-        fitnessFun.target_path=outputData.junctionPos(:,path_index);
+        fitnessFun.target_path=outputData.jointPath(:,path_index);
         index=(ii-1)*ni+iter;
         if iter>ni
             index=index-ni;
         end
         solution=optimLog.group(group_num).solution_history(index,:);
-        [~,result]=fitnessFun.convertSolutionToTrajectory(solution);
+        result=fitnessFun.convertSolutionToTrajectory(solution);
         fitnessFun.qTable.q(:,group_num+1)=result(1:nj,fitnessFun.spacenum+1);
         fitnessFun.qTable.vq(:,group_num+1)=result(nj+1:nj*2,fitnessFun.spacenum+1);
         fitnessFun.qTable.aq(:,group_num+1)=result(nj*2+1:nj*3,fitnessFun.spacenum+1);
@@ -183,7 +183,8 @@ function calculateHistoy()
                 "%d %f  %f\n",iter,cost,optimLog.group(1).fitness_history(iter));
         end
         if group_num==1 && iter==ni   %第一轮最后一次迭代时第一段轨迹的代价值
-            fitnessFun.target_path=outputData.junctionPos(:,path_index);
+            fitnessFun.target_path=outputData.jointPath(:,path_index);
+            fitnessFun.target_path=fitnessFun.target_path(:,1:fitnessFun.spacenum+1);
             [fit, cost_vec]=fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
             firstSegCost=1/fit-cost_vec(end);
         else

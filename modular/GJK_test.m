@@ -43,7 +43,7 @@ global inputData model outputData
     t=linspace(0,5,61);
     para=rands(6,4);
     thetas=para*[ones(1,61);t;t.^2;t.^3];
-    thetas=outputData.trajectory;
+    thetas=outputData.jointPath;
 
     % Animation loop. Terminates on collision.
     try
@@ -63,7 +63,7 @@ global inputData model outputData
                 end
             end
             drawnow;
-            %assert(~collisionFlag, 'collision');
+            assert(~collisionFlag, 'collision');
         end
     catch e
         if isequal(e.message,'collision')

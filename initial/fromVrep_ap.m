@@ -62,6 +62,9 @@ global inputData model
             numVex=int32(vex(1));
             numFace=faces(1);
             inputData.obstacles(i).vex=reshape(vex(2:numVex+1),3,numVex/3);
+            inputData.obstacles(i).XData=inputData.obstacles(i).vex(1,:)';
+            inputData.obstacles(i).YData=inputData.obstacles(i).vex(2,:)';
+            inputData.obstacles(i).ZData=inputData.obstacles(i).vex(3,:)';
             inputData.obstacles(i).face=reshape(faces(2:numFace+1),3,numFace/3);
             inputData.obstacles(i).vn=numVex/3;
             inputData.obstacles(i).centre=calculate_shapeCentre(inputData.obstacles(i).vex);
@@ -73,9 +76,9 @@ global inputData model
             numVex=int32(vex(1));
             numFace=faces(1);
             model.shape(i).vex=reshape(vex(2:numVex+1),3,numVex/3);
-            model.shape(i).XData=model.shape(i).vex(1,:);
-            model.shape(i).YData=model.shape(i).vex(2,:);
-            model.shape(i).ZData=model.shape(i).vex(3,:);
+            model.shape(i).XData=model.shape(i).vex(1,:)';
+            model.shape(i).YData=model.shape(i).vex(2,:)';
+            model.shape(i).ZData=model.shape(i).vex(3,:)';
             model.shape(i).face=reshape(faces(2:numFace+1),3,numFace/3);
             model.shape(i).vn=numVex/3;
             model.shape(i).centre=calculate_shapeCentre(model.shape(i).vex);

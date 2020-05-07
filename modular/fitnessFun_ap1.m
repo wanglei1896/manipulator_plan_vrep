@@ -8,11 +8,10 @@ classdef fitnessFun_ap1
         d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
         linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示, XData, YData, ZData）
         linkCentre; obsCentre;
-        serial_number; %目前优化的是第几组
         target_pos; %目前要优化的目标位置
+        previousJPos; %上一个关节角度
         parameter_bound;
         jointPath; %规划出的关节空间对应路径
-        spacenum;
     end
     
     methods
@@ -26,24 +25,17 @@ classdef fitnessFun_ap1
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
             % 给优化算法回调用，注意接口与其保持一致
-            thetas=[obj.jointPath(:,obj.serial_number),parameters'];
+            thetas=[obj.previousJPos,obj.previousJPos+parameters'];
             %{
               fq
             %}
-            fq=sum(sum(abs(diff(thetas'))));
-            cost=0; cost_vec=zeros(1,2);
-            for i=2:size(thetas,2)
-                [c,c_v] = obj.evaluatePosture(thetas(:,i),i);
-                if c>cost
-                    cost=c;
-                end
-                cost_vec=cost_vec+c_v;
-            end
+            fq=norm(parameters);
+            [cost,cost_vec] = obj.evaluatePosture(thetas(:,2));
             cost_vec=[cost_vec,fq];
             cost=[cost, fq]*[1,1/10]';
             fitness_value=1/(cost+eps); %防止/0错误
         end
-        function [cost,cost_vec] = evaluatePosture(obj,theta,index)
+        function [cost,cost_vec] = evaluatePosture(obj,theta)
             %{
               oa表示避障指标
             %}
@@ -54,15 +46,15 @@ classdef fitnessFun_ap1
                 centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                 for k=1:length(obj.obstacles)
                     centre_dis=norm(centre1-obj.obsCentre(:,k),2);
-                    if centre_dis<0.1
+                    if centre_dis<0.01
                         collision_count=collision_count+1;
-                    elseif false
+                    else%if false
+                        vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                        S1Obj.XData=vertices(1,:)';
+                        S1Obj.YData=vertices(2,:)';
+                        S1Obj.ZData=vertices(3,:)';
                         % Do collision detection
                         if GJK(S1Obj,obj.obstacles(k),6)
-                            vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                            S1Obj.XData=vertices(1,:)';
-                            S1Obj.YData=vertices(2,:)';
-                            S1Obj.ZData=vertices(3,:)';
                             collision_count=collision_count+1;
                         end
                     end
@@ -73,10 +65,7 @@ classdef fitnessFun_ap1
               fdt表示机械臂末端与给定路径点的相符程度度量（越小越好）
             %}
             pos=trans(1:3,4,end);
-            fdt=norm(obj.target_pos(:,index)-pos);
-            %if fdt<0.05
-            %    disp('')
-            %end
+            fdt=norm(obj.target_pos-pos);
             cost_vec=[fdt,oa];
             cost=cost_vec*[1,1]';
         end

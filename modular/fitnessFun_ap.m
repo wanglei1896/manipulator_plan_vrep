@@ -25,11 +25,7 @@ classdef fitnessFun_ap
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
             % 给优化算法回调用，注意接口与其保持一致
-            [status, result] = obj.convertSolutionToTrajectory(parameters);
-            if status ~= 0
-                fitness_value = 1/(result*1000);
-                return;
-            end
+            result = obj.convertSolutionToTrajectory(parameters);
             [fitness_value,cost_vec] = obj.evaluateTrajectory(result,parameters);
         end
         function [evaluate_value,cost_vec] = evaluateTrajectory(obj,result,parameters)
@@ -37,7 +33,6 @@ classdef fitnessFun_ap
             vl=result(obj.joint_num+1:2*obj.joint_num,:);
             al=result(2*obj.joint_num:3*obj.joint_num,:);
             n_tj=size(ql,2); %整条轨迹上的采样点
-            %pos=zeros(3,n_tj); %存储整条轨迹上机械臂末端位置
             %{
               ft表示轨迹中速度/加速度超过max的轨迹片段的各采样点速度/加速度之和。
               此指标可发现轨迹中速度/加速度过高的片段，并引导agent减少或改善这些片段；
@@ -74,11 +69,11 @@ classdef fitnessFun_ap
                             collision_count=collision_count+1;
                         elseif false
                             % Do collision detection
+                            vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                            S1Obj.XData=vertices(1,:)';
+                            S1Obj.YData=vertices(2,:)';
+                           	S1Obj.ZData=vertices(3,:)';
                             if GJK(S1Obj,obj.obstacles(k),6)
-                                vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                                S1Obj.XData=vertices(1,:)';
-                                S1Obj.YData=vertices(2,:)';
-                                S1Obj.ZData=vertices(3,:)';
                                 collision_count=collision_count+1;
                             end
                         end
@@ -91,17 +86,16 @@ classdef fitnessFun_ap
             %{
               fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
             %}
-            assert(mod(obj.spacenum,2)==0)
-            if size(ql,2)==obj.spacenum+1 %区分是两段还是一段
-                sp=obj.spacenum;
-            else
-                sp=obj.spacenum*2;
+            %区分是两段还是一段
+            if n_tj==obj.spacenum+1  %一段
+                regPos = regular_path(ql, obj.spacenum);   
+            else  %两段
+                regPos_1 = regular_path(ql(:,1:obj.spacenum+1),obj.spacenum);
+                regPos_2 = regular_path(ql(:,obj.spacenum+1:end),obj.spacenum); %相应分成两部分
+                regPos = [regPos_1, regPos_2(:,2:end)];
             end
-            regPath = regular_path(obj.target_path(1:obj.joint_num,:), sp);
-            regPos_1 = regular_path(ql(:,1:floor(size(ql,2)/2)),sp/2);
-            regPos_2 = regular_path(ql(:,floor(size(ql,2)/2):end),sp/2); %相应分成两部分
-            regPos = [regPos_1, regPos_2(:,2:end)];
-            deltas=abs(regPath-regPos);
+            regTarget = regular_path(obj.target_path(1:obj.joint_num,:), n_tj-1);
+            deltas=abs(regTarget-regPos);
             Pos_punishment=[];
             fdt=norm(deltas(:,1));
             for delta=deltas(:,2:end)
@@ -123,7 +117,7 @@ classdef fitnessFun_ap
             %}
             time=sum(parameters(end));
             cost_vec=[ft,fq,fdt,oa,fdis,time, Pos_punishment];
-            cost=cost_vec*[1,0,1,1,0,0, zeros(1,length(Pos_punishment))]';
+            cost=cost_vec*[1,1,1,1,0,1, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function T = fastForwardTrans(obj, theta)
@@ -159,8 +153,7 @@ classdef fitnessFun_ap
             end
         end
         
-        function [status, result] = convertSolutionToTrajectory(obj, parameters)
-            status = 0;
+        function result = convertSolutionToTrajectory(obj, parameters)
             spacenum = obj.spacenum;
             qTable = obj.qTable;
             Serialnumber = obj.serial_number;
@@ -173,8 +166,9 @@ classdef fitnessFun_ap
             ax0=qTable.aq(:,Serialnumber);
 
             % 右侧端点
-            x1=parameters(1:num_joints)';
-            vx1=parameters(num_joints+1:num_joints*2)';
+            x1=qTable.q(:,Serialnumber+1);
+            vx1=parameters(1:num_joints)';
+            ax1=parameters(num_joints+1:num_joints*2)';
             t1=parameters(end)/2;
             t2=parameters(end)/2;
             assert(t1>0);
@@ -195,13 +189,21 @@ classdef fitnessFun_ap
             assert(isequal(size(vx1),[num_joints,1])); % 需为列向量
 
             % compute interpolate factor(analytical solution)
+            %{
             a00=x0;
             a01=vx0;
             a02=ax0/2;
             a03=(4*x1-vx1*t1-4*x0-3*vx0*t1-ax0*t1^2)/t1^3;
             a04=(vx1*t1-3*x1+3*x0+2*vx0*t1+ax0*t1^2/2)/t1^4;
             ax1=2*a02+6*a03*t1+12*a04*t1^2;
-            A1 = [a00, a01, a02, a03, a04];
+            %}
+            a00=x0;
+            a01=vx0;
+            a02=ax0/2;
+            a03=(20*x1-20*x0-(8*vx1+12*vx0)*t1-(3*ax0-ax1)*t1^2)/(2*t1^3);
+            a04=(30*x0-30*x1+(14*vx1+16*vx0)*t1+(3*ax0-2*ax1)*t1^2)/(2*t1^4);
+            a05=(12*x1-12*x0-(6*vx1+6*vx0)*t1-(ax0-ax1)*t1^2)/(2*t1^5);
+            A1 = [a00, a01, a02, a03, a04, a05];
 
             b10=x1;
             b11=vx1;
@@ -219,11 +221,11 @@ classdef fitnessFun_ap
             
             z1=zeros(1,length(tl1));
             z2=zeros(1,length(tl2));
-            result=[A1*[tl1.^0; tl1.^1; tl1.^2; tl1.^3; tl1.^4],...
+            result=[A1*[tl1.^0; tl1.^1; tl1.^2; tl1.^3; tl1.^4; tl1.^5],...
                     A2*[tl2.^0; tl2.^1; tl2.^2; tl2.^3; tl2.^4; tl2.^5]; % the angle varies of each joint
-                    A1*[z1; tl1.^0; 2*tl1.^1; 3*tl1.^2; 4*tl1.^3],...
+                    A1*[z1; tl1.^0; 2*tl1.^1; 3*tl1.^2; 4*tl1.^3; 5*tl1.^4],...
                     A2*[z2; tl2.^0; 2*tl2.^1; 3*tl2.^2; 4*tl2.^3; 5*tl2.^4]; % the velocity varies of each joint
-                    A1*[z1; z1; 2*tl1.^0; 6*tl1.^1; 12*tl1.^2],...
+                    A1*[z1; z1; 2*tl1.^0; 6*tl1.^1; 12*tl1.^2; 20*tl1.^3],...
                     A2*[z2; z2; 2*tl2.^0; 6*tl2.^1; 12*tl2.^2; 20*tl2.^3]; % the acceleration varies of each joint
                    ];
             if Serialnumber+2>size(qTable.q,2) %处理末端

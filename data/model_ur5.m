@@ -9,5 +9,6 @@ function result=model_ur5()
   for i=1:6
     result.shape(i).vex=[];
   end
+  result.joint_num=6;
 end
 

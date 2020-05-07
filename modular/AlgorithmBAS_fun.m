@@ -8,7 +8,7 @@ function [fitness_history, fitvec_history, solution_history,optimization_time]..
     obj_iteration_num = iteration_num;
     obj_solution_bound = solution_bound;
     %obj_precision=0.001;
-    obj_decay_rate=0.98; %衰减率
+    obj_decay_rate=0.95; %衰减率
     obj_ratio=2; %ratio of antenna_length and step_length
     obj_step_length=0.5; %天牛的步长
     obj_ante_dis=obj_step_length*obj_ratio; %天牛的探测范围直径(触须长)
