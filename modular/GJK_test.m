@@ -56,10 +56,20 @@ global inputData model outputData
                 S1Objs(i).Vertices = (tran(1:3,1:3)*S1Coords(i).Vertices'+tran(1:3,4))';
                 for S2Obj = S2Objs
                     % Do collision detection
+                    V1=S1Objs(i).Vertices';
+                    V2=S2Obj.Vertices';
+                    r=openGJK(V1,V2);
+                    %disp(r)
+                    if r<0.005
+                        collisionFlag = true;
+                        collision_count=collision_count+1;
+                    end
+                    %{
                     if GJK(S1Objs(i),S2Obj,iterationsAllowed)
                         collisionFlag = true;
                         collision_count=collision_count+1;
                     end
+                    %}
                 end
             end
             drawnow;

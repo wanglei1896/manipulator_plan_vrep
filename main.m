@@ -6,7 +6,7 @@ global  outputData ...
         optimLog ...       %优化日志，算法优化过程中产生的信息（用于分析）
         model           %机械臂的运动学模型
 %}
-
+clear all;
 %% 运行环境
 ProjectPath = fileparts(mfilename('fullpath'));
 addpath(fullfile(ProjectPath, 'initial')); % 此文件夹下放规划的初始化脚本

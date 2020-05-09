@@ -54,9 +54,7 @@ classdef fitnessFun_ap
             fq=sum(sum(abs(diff(ql'))));
             %{
               oa表示避障指标
-            %}
             collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
-            %{
             for i=1:n_tj
                 theta=ql(:,i);
                 trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
@@ -65,24 +63,22 @@ classdef fitnessFun_ap
                     centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                     for k=1:length(obj.obstacles)
                         centre_dis=norm(centre1-obj.obsCentre(:,k),2);
-                        if centre_dis<0.1
+                        if centre_dis<0.01
                             collision_count=collision_count+1;
                         elseif false
-                            % Do collision detection
                             vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                            S1Obj.XData=vertices(1,:)';
-                            S1Obj.YData=vertices(2,:)';
-                           	S1Obj.ZData=vertices(3,:)';
-                            if GJK(S1Obj,obj.obstacles(k),6)
+                            % Do collision detection
+                            if openGJK(vertices,obj.obstacles(k).vex)<0.005
                                 collision_count=collision_count+1;
                             end
                         end
                     end
                 end
-                pos(:,i)=trans(1:3,4,end);
+                %pos(:,i)=trans(1:3,4,end);
             end
-            %}
             oa=collision_count;
+            %}
+            oa=0;
             %{
               fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
             %}

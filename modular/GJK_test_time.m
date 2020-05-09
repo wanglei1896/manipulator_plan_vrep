@@ -27,5 +27,10 @@ function GJK_test_time()
         GJK(S1Obj,S2Obj,iterationsAllowed);
     end
     toc
+    tic
+    for i=1:300000
+        dist=openGJK(V1',V2');
+    end
+    toc
 end
 

@@ -32,35 +32,39 @@ classdef fitnessFun_ap1
             fq=norm(parameters);
             [cost,cost_vec] = obj.evaluatePosture(thetas(:,2));
             cost_vec=[cost_vec,fq];
-            cost=[cost, fq]*[1,1/10]';
+            cost=[cost, fq]*[1,1/5]';
             fitness_value=1/(cost+eps); %防止/0错误
         end
         function [cost,cost_vec] = evaluatePosture(obj,theta)
             %{
               oa表示避障指标
             %}
-            collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+            %collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+            min_dis=1;
             trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
             for j=1:6
                 tran = trans(:,:,j+1);
-                centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
+                %centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                 for k=1:length(obj.obstacles)
-                    centre_dis=norm(centre1-obj.obsCentre(:,k),2);
-                    if centre_dis<0.01
-                        collision_count=collision_count+1;
-                    else%if false
+                    %centre_dis=norm(centre1-obj.obsCentre(:,k),2);
+                    %if centre_dis<0.01
+                    %    collision_count=collision_count+1;
+                    %else%if false
                         vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                        S1Obj.XData=vertices(1,:)';
-                        S1Obj.YData=vertices(2,:)';
-                        S1Obj.ZData=vertices(3,:)';
                         % Do collision detection
-                        if GJK(S1Obj,obj.obstacles(k),6)
-                            collision_count=collision_count+1;
+                        dis=openGJK(vertices,obj.obstacles(k).vex);
+                        if dis<min_dis
+                            %collision_count=collision_count+1;
+                            min_dis=dis;
                         end
-                    end
+                    %end
                 end
             end
-            oa=collision_count;
+            %if min_dis<0.001
+                oa=sqrt(1/min_dis)/100;
+            %else
+            %    oa=0;
+            %end
             %{
               fdt表示机械臂末端与给定路径点的相符程度度量（越小越好）
             %}

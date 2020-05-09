@@ -20,8 +20,8 @@ disp('Program ended');
 function send2vrep(vrep, clientID)
 global outputData
 %     diseredPath=inputData.path;
-    joint_angle=outputData.trajectory;
-    %joint_angle=outputData.jointPath;
+    %joint_angle=outputData.trajectory;
+    joint_angle=outputData.jointPath;
     try
         % get handle
         for i=1:6
