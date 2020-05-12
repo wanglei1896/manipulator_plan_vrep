@@ -5,13 +5,14 @@ classdef fitnessFun_ap
     properties
         % 访问全局变量太慢，所以存在这里作为私有数据
         d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
-        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示, XData, YData, ZData）
+        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示）
         linkCentre; obsCentre;
         spacenum; % 生成轨迹段数
         qTable; % 各轨迹段端点处的参数值（关节位置、速度、加速度）
         serial_number; %目前优化的是第几段
         target_path; %目前要优化段的目标路径(关节空间)
         parameter_bound;
+        obflag; %是否开启避障(耗时)
     end
     
     methods
@@ -29,10 +30,12 @@ classdef fitnessFun_ap
             [fitness_value,cost_vec] = obj.evaluateTrajectory(result,parameters);
         end
         function [evaluate_value,cost_vec] = evaluateTrajectory(obj,result,parameters)
+            global hyperparameter
             ql=result(1:obj.joint_num,:);
             vl=result(obj.joint_num+1:2*obj.joint_num,:);
             al=result(2*obj.joint_num:3*obj.joint_num,:);
             n_tj=size(ql,2); %整条轨迹上的采样点
+            pos=zeros(3,n_tj); %末端轨迹
             %{
               ft表示轨迹中速度/加速度超过max的轨迹片段的各采样点速度/加速度之和。
               此指标可发现轨迹中速度/加速度过高的片段，并引导agent减少或改善这些片段；
@@ -54,31 +57,34 @@ classdef fitnessFun_ap
             fq=sum(sum(abs(diff(ql'))));
             %{
               oa表示避障指标
-            collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+            %}
+            oa=0;
+            if obj.obflag==true
             for i=1:n_tj
                 theta=ql(:,i);
+                min_dis=1;
                 trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
                 for j=1:6
                     tran = trans(:,:,j+1);
-                    centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                     for k=1:length(obj.obstacles)
-                        centre_dis=norm(centre1-obj.obsCentre(:,k),2);
-                        if centre_dis<0.01
-                            collision_count=collision_count+1;
-                        elseif false
-                            vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                            % Do collision detection
-                            if openGJK(vertices,obj.obstacles(k).vex)<0.005
-                                collision_count=collision_count+1;
-                            end
+                        vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                        % Do collision detection
+                        dis=openGJK(vertices,obj.obstacles(k).vex);
+                        if dis<min_dis
+                            min_dis=dis;
                         end
                     end
                 end
-                %pos(:,i)=trans(1:3,4,end);
+                if min_dis>1e-4
+                    ot=1/min_dis;
+                else% min_dis<=1e-4
+                    ot=1/1e-4;
+                end
+                ot=ot*1e-4;
+                oa=oa+ot;
+                pos(:,i)=trans(1:3,4,7);
             end
-            oa=collision_count;
-            %}
-            oa=0;
+            end
             %{
               fdt表示机械臂末端划过的路径与给定路径的相符程度度量（越小越好）
             %}
@@ -103,17 +109,19 @@ classdef fitnessFun_ap
             end
             %{
               fdis表示机械臂末端划过的轨迹长度
-            dx=diff(pos(1,:)); dy=diff(pos(2,:)); dz=diff(pos(3,:));
-            dis=sqrt(dx.^2+dy.^2+dz.^2);
-            fdis=sum(dis);
             %}
             fdis=0;
+            if obj.obflag==true
+                dx=diff(pos(1,:)); dy=diff(pos(2,:)); dz=diff(pos(3,:));
+                dis=sqrt(dx.^2+dy.^2+dz.^2);
+                fdis=sum(dis);
+            end
             %{
               time表示轨迹运动的时间
             %}
             time=sum(parameters(end));
             cost_vec=[ft,fq,fdt,oa,fdis,time, Pos_punishment];
-            cost=cost_vec*[1,1,1,1,0,1, zeros(1,length(Pos_punishment))]';
+            cost=cost_vec*[hyperparameter.ap2_tradeoff, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function T = fastForwardTrans(obj, theta)

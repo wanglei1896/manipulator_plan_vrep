@@ -4,9 +4,8 @@ classdef fitnessFun_ap1
     %   寻找满足条件的单个关节位姿
     
     properties
-        % 访问全局变量太慢，所以存在这里作为私有数据
         d; a; alpha; base; joint_num; offset; % 机械臂的相关参数
-        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示, XData, YData, ZData）
+        linkShapes; obstacles; % 机械臂连杆和障碍物的mesh shape（顶点表示）
         linkCentre; obsCentre;
         target_pos; %目前要优化的目标位置
         previousJPos; %上一个关节角度
@@ -24,6 +23,7 @@ classdef fitnessFun_ap1
         end
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
+            global hyperparameter
             % 给优化算法回调用，注意接口与其保持一致
             thetas=[obj.previousJPos,obj.previousJPos+parameters'];
             %{
@@ -32,10 +32,11 @@ classdef fitnessFun_ap1
             fq=norm(parameters);
             [cost,cost_vec] = obj.evaluatePosture(thetas(:,2));
             cost_vec=[cost_vec,fq];
-            cost=[cost, fq]*[1,1/5]';
+            cost=[cost, fq]*[1,hyperparameter.ap1_to1]';
             fitness_value=1/(cost+eps); %防止/0错误
         end
         function [cost,cost_vec] = evaluatePosture(obj,theta)
+            global hyperparameter
             %{
               oa表示避障指标
             %}
@@ -44,34 +45,32 @@ classdef fitnessFun_ap1
             trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
             for j=1:6
                 tran = trans(:,:,j+1);
-                %centre1=tran(1:3,1:3)*obj.linkCentre(:,j)+tran(1:3,4);
                 for k=1:length(obj.obstacles)
-                    %centre_dis=norm(centre1-obj.obsCentre(:,k),2);
-                    %if centre_dis<0.01
-                    %    collision_count=collision_count+1;
-                    %else%if false
-                        vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
-                        % Do collision detection
-                        dis=openGJK(vertices,obj.obstacles(k).vex);
-                        if dis<min_dis
-                            %collision_count=collision_count+1;
-                            min_dis=dis;
-                        end
-                    %end
+                    vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
+                    % Do collision detection
+                    dis=openGJK(vertices,obj.obstacles(k).vex);
+                    if dis<min_dis
+                        %collision_count=collision_count+1;
+                        min_dis=dis;
+                    end
                 end
-            end
-            %if min_dis<0.001
-                oa=sqrt(1/min_dis)/100;
-            %else
+            end 
+            %if min_dis>=1e-2
             %    oa=0;
-            %end
+            %else
+            if min_dis>hyperparameter.ob_e
+                oa=1/min_dis;
+            else% min_dis<=ob_e
+                oa=1/hyperparameter.ob_e;
+            end
+            oa=(oa*hyperparameter.ob_e)^hyperparameter.ob_beta;
             %{
               fdt表示机械臂末端与给定路径点的相符程度度量（越小越好）
             %}
             pos=trans(1:3,4,end);
             fdt=norm(obj.target_pos-pos);
             cost_vec=[fdt,oa];
-            cost=cost_vec*[1,1]';
+            cost=cost_vec*[1,hyperparameter.ap1_to2]';
         end
         function T = fastForwardTrans(obj, theta)
             a=obj.a; d=obj.d; alpha=obj.alpha; 

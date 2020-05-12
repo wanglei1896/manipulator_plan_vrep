@@ -8,7 +8,7 @@ function [fitness_history, fitvec_history, solution_history,optimization_time]..
     obj_iteration_num = iteration_num;
     obj_solution_bound = solution_bound;
     %obj_precision=0.001;
-    obj_decay_rate=0.95; %衰减率
+    obj_decay_rate=0.99; %衰减率
     obj_ratio=2; %ratio of antenna_length and step_length
     obj_step_length=0.5; %天牛的步长
     obj_ante_dis=obj_step_length*obj_ratio; %天牛的探测范围直径(触须长)
@@ -61,7 +61,7 @@ function [fitness_history, fitvec_history, solution_history,optimization_time]..
     %算法内部各维度的寻优范围都是[0,1],计算适应度值时映射到给定范围
     function result = restore_bound(solution)
         for s=solution
-           assert(s>=0 && s<=1) 
+           assert(s>=0 && s<=1)
         end
         lower = obj_solution_bound(:,1)';
         upper = obj_solution_bound(:,2)';

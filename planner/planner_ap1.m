@@ -1,6 +1,13 @@
 %% path tracking规划的第一步
 %   确定各个轨迹连接点处的关节位置
-global inputData optimLog model fitnessFun
+global inputData optimLog model fitnessFun hyperparameter
+%% 超参数汇总：
+hyperparameter.ap1_delta=0.1; %控制相邻规划点上各关节相较上一个规划点的活动范围
+hyperparameter.ap1_to1=0; %fq与cost的混合比例，tradeoff
+hyperparameter.ap1_to2=1/3; %避障部分与fdt代价的混合比例，tradeoff
+hyperparameter.ob_e=1e-3; %避障部分的最小距离，低于此最小距离则代价不再增长
+hyperparameter.ob_beta=1; %避障部分代价函数中的指数系数
+
 
 %% optimLog更新，因此重置受其影响的变量
 % optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
@@ -11,15 +18,9 @@ optimLog = optimLog_ap(optimLog.group_num);
 fitnessFun = fitnessFun_ap1(model.km);
 fitnessFun.joint_num=model.joint_num;
 fitnessFun.jointPath=zeros(fitnessFun.joint_num,inputData.spacenum+1);
-fitnessFun.parameter_bound=ones(fitnessFun.joint_num,1)*[-pi, pi]*0.2;  %q * 6
+fitnessFun.parameter_bound=ones(fitnessFun.joint_num,1)*[-pi, pi]*hyperparameter.ap1_delta;  %q * 6
 fitnessFun.obstacles=inputData.obstacles;
 fitnessFun.linkShapes = model.shape;
-for i=1:inputData.obstacle_num
-    fitnessFun.obsCentre=[fitnessFun.obsCentre, inputData.obstacles(i).centre];
-end
-for i=1:length(model.shape)
-    fitnessFun.linkCentre=[fitnessFun.linkCentre, model.shape(i).centre]; 
-end
 
 %% 主规划过程
 main();
@@ -27,7 +28,7 @@ main();
 function main()
 global optimLog fitnessFun model outputData inputData
     %% 算法初始化
-    iternum = 100;
+    iternum = 300;
     assert(length(model.shape)==model.joint_num)
     p_spacenum=inputData.spacenum/optimLog.group_num;
     fitnessFun.jointPath(:,1)=inputData.qStart';

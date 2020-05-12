@@ -49,8 +49,8 @@ global inputData model outputData
     try
         collisionFlag = false;
         collision_count = 0;
-        for theta = thetas
-            trans=fastForwardTrans(theta); %forwardTrans to get the transform matrix
+        for j=1:size(thetas,2)
+            trans=fastForwardTrans(thetas(:,j)); %forwardTrans to get the transform matrix
             for i=1:6
                 tran = trans(:,:,i+1);
                 S1Objs(i).Vertices = (tran(1:3,1:3)*S1Coords(i).Vertices'+tran(1:3,4))';
@@ -59,17 +59,11 @@ global inputData model outputData
                     V1=S1Objs(i).Vertices';
                     V2=S2Obj.Vertices';
                     r=openGJK(V1,V2);
-                    %disp(r)
                     if r<0.005
                         collisionFlag = true;
                         collision_count=collision_count+1;
+                        disp([j,i])
                     end
-                    %{
-                    if GJK(S1Objs(i),S2Obj,iterationsAllowed)
-                        collisionFlag = true;
-                        collision_count=collision_count+1;
-                    end
-                    %}
                 end
             end
             drawnow;

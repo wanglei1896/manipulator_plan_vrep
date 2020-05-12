@@ -1,6 +1,10 @@
 %% along path 的规划过程
 % 
-global inputData optimLog model fitnessFun
+global inputData optimLog model fitnessFun hyperparameter
+
+%% 超参数汇总：
+hyperparameter.ap2_tradeoff=[1 1 1 1 1 1]; %代价函数中各指标的混合比例
+
 
 %% optimLog更新，因此重置受其影响的变量
 % optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
@@ -23,12 +27,7 @@ fitnessFun.spacenum = inputData.spacenum/optimLog.group_num;
 fitnessFun.joint_num = model.joint_num;
 fitnessFun.obstacles=inputData.obstacles;
 fitnessFun.linkShapes = model.shape;
-for i=1:inputData.obstacle_num
-    fitnessFun.obsCentre=[fitnessFun.obsCentre, inputData.obstacles(i).centre];
-end
-for i=1:length(model.shape)
-    fitnessFun.linkCentre=[fitnessFun.linkCentre, model.shape(i).centre]; 
-end
+fitnessFun.obflag = false;
 
 % 为各组天牛的参数初始化值
 % qTable的第一列为起始端点，后每一列为每段的右端点
@@ -41,47 +40,28 @@ main();
 function main()
 global outputData optimLog fitnessFun model
     %% 算法初始化
-    sizepop = 50;
-    iternum = 40;
+    sizepop = 40;
+    iternum = 25;
     group_size = optimLog.group_num;
 
     %% 调用算法规划
     disp('planning start.');
-    optimLog.round_num=1;
-    
-    for ii=1:optimLog.round_num
-        %fitnessFun.qTable = initial_parameters(inputData.qStart, inputData.path(:,end), model);
-        % 第一轮,奇数编号结点
-        for i=1:2:group_size
-            update_solution(i,ii)
-        end
-        % 第二轮,偶数编号结点
-        for i=2:2:group_size
-            update_solution(i,ii)
-        end
+    % 第一轮,奇数编号结点
+    for i=1:2:group_size
+        update_solution(i)
+    end
+    % 第二轮,偶数编号结点
+    for i=2:2:group_size
+        update_solution(i)
     end
     disp('planning ended');
     
     get_trajectory();
     
-    function update_solution(group_number,round)
+    function update_solution(group_number)
         global inputData
         bound=fitnessFun.parameter_bound(:,:,group_number);
         bound=reshape(bound,size(bound,1),size(bound,2));
-        %{
-        if round>1
-            % 利用上一轮的结果作为经验，简化本轮的优化
-            last_round_sol = optimLog.group(group_number).solution_history(end,:);
-            last_round_fitvec = optimLog.group(group_number).fitvec_history(end,:);
-            assert(length(last_round_fitvec)==26 || length(last_round_fitvec)==16)
-            %range=last_round_fitvec(16)*6;
-            range=(bound(1,2)-bound(1,1))/4;
-            disp([num2str(group_number),'  ',num2str(range)])
-            bound(1:model.joint_num,1)=last_round_sol(1:model.joint_num)'-range;
-            bound(1:model.joint_num,2)=last_round_sol(1:model.joint_num)'+range;
-            fitnessFun.parameter_bound(:,:,group_number)=bound;
-        end
-        %}
 
         fitnessFun.serial_number = group_number;
         path_index=equalDivide(inputData.spacenum,group_size,group_number);

@@ -183,8 +183,8 @@ function calculateHistoy()
                 "%d %f  %f\n",iter,cost,optimLog.group(1).fitness_history(iter));
         end
         if group_num==1 && iter==ni   %第一轮最后一次迭代时第一段轨迹的代价值
-            fitnessFun.target_path=outputData.jointPath(:,path_index);
-            fitnessFun.target_path=fitnessFun.target_path(:,1:fitnessFun.spacenum+1);
+            fitnessFun.target_path=outputData.jointPath(:,path_index(1:ceil(length(path_index)/2)));
+            %fitnessFun.target_path=fitnessFun.target_path(:,1:fitnessFun.spacenum+1);
             [fit, cost_vec]=fitnessFun.evaluateTrajectory(result(:,1:fitnessFun.spacenum+1),solution);
             firstSegCost=1/fit-cost_vec(end);
         else
