@@ -25,7 +25,7 @@ initial_ap;
 
 %% 规划过程
 planner_ap1;
-planner_ap;
+planner_ap2;
 %planner_p2p;
 
 %% 在环境中执行规划出的位姿/轨迹
