@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage{CJK}
+\begin{document}
+\begin{CJK}{UTF8}{song}
+\title{从任意变换矩阵中提取D-H参数}
+\maketitle
+\textbf{1.任意变换矩阵的分解}\\
+任意的变换矩阵可以分解为三个子矩阵的乘积:$T_1T_2T_3=T$。
+若用$T_x$表示沿x轴的旋转平移变换，$T_y$表示沿y轴的旋转平移变换，$T_z$表示沿z轴的旋转平移变换，
+则根据欧拉旋转定理，三个子矩阵中相邻两矩阵不绕同一轴旋转平移。
+如以下变换可表示任意旋转变换：\\
+$T=T_xT_yT_z$,\qquad$T=T_xT_yT_x$,\qquad$T=T_zT_xT_z$,\qquad$T=T_zT_yT_x$\\
+以下变换则不能表示任意旋转变换：\\
+$T=T_xT_yT_y=T_xT_y$,\qquad$T=T_xT_xT_x=T_x$,\qquad$T=T_xT_xT_z=T_xT_z$\\
+\\
+\textbf{2.转化为DH变换矩阵的核心方法}\\
+DH参数表示的变换称为DH变换:$T_{DH}=T_zT_x$,其中,$T_z$和$T_x$分别用旋转平移参数($\theta$,$d$)以及($\alpha$,$a$)来参数化。
+由前文可知，由于DH变换缺少一个沿y轴或z轴的变换,其不能表示任意变换，因此我们在这里不上一个虚拟的子矩阵$T_z^\prime$,其用($\theta^\prime$,$d^\prime$)来参数化，则任意变换可表示为$T=T_{DH}T_z^\prime$。\\
+机械臂是由一个个关节连接而成的，相邻关节的坐标系之间可能存在任意变换，其运动学如下所示：\\
+$$T_e=T_1\cdot T_2\cdot T_3 ... T_n$$
+$$=(T_{DH_1}T_{z_1}^\prime)(T_{DH_2}T_{z_2}^\prime) ... (T_{DH_n}T_{z_n}^\prime)$$
+其中$T_e$表示到末端执行器的变换，$T_i$表示第$i$到第$i+1$号关节的变换，改变括号的结合方式后，我们有
+$$T_e=T_{DH_1}(T_{z_1}^\prime T_{DH_2})(T_{z_2}^\prime T_{DH3}) ... (T_{z_{n-1}}^\prime T_{DH_n})T_{z_n}^\prime$$
+其中
+$$T_{z_i}^\prime T_{DH_{i+1}}=T_{z_i}^\prime T_{z_{i+1}}T_{x_{i+1}}=T_{z_{i+1}}^{\prime\prime} T_{x_{i+1}}=T_{DH_{i+1}}^\prime$$
+于是
+$$T_e=T_{DH_1}T_{DH_2}^\prime ... T_{DH_n}^\prime T_{z_n}^\prime$$
+由于$T_n$一般仅仅是一个$T_z$变换，所以可忽略$T_{z_n}^\prime$
+最后
+$$T_e=T_{DH_1}T_{DH_2}^\prime T_{DH_3}^\prime ... T_{DH_n}^\prime$$
+其中$T_{DH_1}$用($\theta_1$,$d$,$\alpha_1$,$a_1$)参数化，$T_{DH_{i+1}}^\prime$用($\theta_i^\prime+\theta_{i+1}$,$d_i^\prime+d_{i+1}$,$\alpha_{i+1}$,$a_{i+1}$)参数化($i \in [1,n)$)\\
+\\
+\textbf{3.如何从$T_i$中提取参数}($\theta_i$,$d_i$,$\alpha_i$,$a_i$,$\theta^\prime_i$,$d^\prime_i$)\\
+$$T=T_zT_xT_z^\prime$$
+$$={
+\left[ \begin{array}{cccc}
+         cos(\theta) & -sin(\theta) & 0 & 0 \\
+         sin(\theta) & cos(\theta) & 0 & 0 \\
+         0 & 0 & 1 & d \\
+         0 & 0 & 0 & 1
+       \end{array}
+\right ]\cdot
+\left[ \begin{array}{cccc}
+         0 & 0 & 0 & a \\
+         0 & cos(\alpha) & -sin(\alpha) & 0 \\
+         0 & sin(\alpha) & cos(\alpha) & 0 \\
+         0 & 0 & 0 & 1
+       \end{array}
+\right ]\cdot
+\left[ \begin{array}{cccc}
+         cos(\theta^\prime) & -sin(\theta^\prime) & 0 & 0 \\
+         sin(\theta^\prime) & cos(\theta^\prime) & 0 & 0 \\
+         0 & 0 & 1 & d^\prime \\
+         0 & 0 & 0 & 1
+       \end{array}
+\right ]
+}
+$$
+$$
+={
+\left[ \begin{array}{cccc}
+         \cos\theta\cos\theta^\prime-\sin\theta\sin\theta^\prime\cos\alpha & -\sin\theta^\prime\cos\theta+\cos\theta^\prime\sin\theta\cos\alpha & \sin\theta\sin\alpha & d^\prime\sin\theta\sin\alpha+a\cos\theta \\
+         \sin\theta\cos\theta^\prime+\cos\theta\sin\theta^\prime\cos\alpha & -\sin\theta^\prime\sin\theta+\cos\theta^\prime\cos\theta\cos\alpha & -\cos\theta\sin\alpha & -d^\prime\cos\theta\sin\alpha+a\sin\theta \\
+         \sin\theta^\prime\sin\alpha & \cos\theta^\prime\sin\alpha & \cos\alpha & d^\prime\cos\alpha+d \\
+         0 & 0 & 0 & 1
+       \end{array}
+\right]
+}
+$$
+假设已知的变换矩阵为:
+$$
+DHT={
+\left[ \begin{array}{cccc}
+         T[1]& T[2] & T[3] & T[4] \\
+         T[5]& T[6] & T[7] & T[8] \\
+         T[9]& T[10] & T[11] & T[12] \\
+         0 & 0 & 0 & 1
+       \end{array}
+\right]
+}
+$$
+则先由$\cos^{-1}(T[11])$可求得$\alpha$。
+若$\sin\alpha\neq0$，则结合$T[3],T[7],T[9],T[10]$可求得$\theta$与$\theta^\prime$，然后将$\theta$和$\alpha$的值代入$T[4],T[8],T[12]$,联立解三元一次方程组，即可求得$d$,$a$以及$d^\prime$；
+若$\sin\alpha=0$，则矩阵可简化为：
+$$
+\left[ \begin{array}{cccc}
+         \cos(\theta\pm\theta^\prime) & \sin(\theta\pm\theta^\prime) & 0 & a\cos\theta \\
+         \sin(\theta\pm\theta^\prime) & \cos(\theta\pm\theta^\prime) & 0 & a\sin\theta \\
+         0 & 0 & \pm 1 & \pm d^\prime+d \\
+         0 & 0 & 0 & 1
+       \end{array}
+\right]
+$$
+由于这里$\theta$和$\theta^\prime$作用相同，我们可以令$\theta^\prime=0$，这样，其余各参数也都可轻松求出了。\\
+\\
+求解时要注意的点：
+\begin{enumerate}
+\item 仅用反三角函数求解时得到的角度值可以有多个，如$\sin\theta=0$时$\theta$可以是0也可以是$\pi$,需结合$\cos\theta$的值进一步确定；
+\item 由于是浮点运算，所以比较时不能用等号，求反三角函数时因为精度问题也可能超过$[-1,1]$的取值范围，另外也得避免除以0的情况；
+\end{enumerate}
+
+
+\textbf{感想：}\\
+本来以为这种提取DH参数的工具网上应该挺好找的，然而出乎意料竟然没找到。
+vrep上本来有一个DH extractor工具，但是有各种问题，得到的DH参数我用着根本不对，也不知道是不是我没用对。
+刚好现在的任务里面要适配各种类型机械臂，自动提取DH参数就显得比较重要了，于是决定自己写一个这样的工具。凭着自己的理解，大致是写出来了，然而中间确走了相当多的坑。基本思路还挺简单的，大概当天就有头绪了，但是实现上却花了很多时间，算了一下，从周四开始到周日上午最后完成，用了4天时间，这四天时间里后面三天都是在修改调bug！一个原因是代码里面条件挺多的，本身要正确实现就有点难，但最主要的障碍还是整个环境难以调试，找到问题的出处要花上很久。接下来要加强自己在代码正确实现和调试上的功力了。\\
+总的来说，写完了还是有点成就感的，但毕竟花了太多时间，而且这仅仅是任务中一个为了方便点而做的工具，不知道这个投入产出比值不值。难得搞了这么长时间走了这么多坑，还是记录一下来的好。接下来就可以更方便的开展规划算法的适配工作了，还有就是不能保证现在的代码一定没问题了，毕竟我只试了4个机械臂。。。
+\end{CJK}
+\end{document}

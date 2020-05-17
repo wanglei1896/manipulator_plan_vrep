@@ -1,6 +1,11 @@
 # generate files
 **/*.asv
 **/*.mat
+**/*.aux
+**/*.bbl
+**/*.dvi
+**/*.log
+**/*.synctex
 
 # vrep的远程api环境
 /connectionTool/**
