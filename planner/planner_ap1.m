@@ -8,19 +8,16 @@ hyperparameter.ap1_to2=1/3; %避障部分与fdt代价的混合比例，tradeoff
 hyperparameter.ob_e=1e-3; %避障部分的最小距离，低于此最小距离则代价不再增长
 hyperparameter.ob_beta=1; %避障部分代价函数中的指数系数
 
-
 %% optimLog更新，因此重置受其影响的变量
 % optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
 optimLog = optimLog_ap(optimLog.group_num);
 
 %% 配置代价函数
 % 轨迹编码
-fitnessFun = fitnessFun_ap1(model.km);
-fitnessFun.joint_num=model.joint_num;
-fitnessFun.jointPath=zeros(fitnessFun.joint_num,inputData.spacenum+1);
-fitnessFun.parameter_bound=ones(fitnessFun.joint_num,1)*[-pi, pi]*hyperparameter.ap1_delta;  %q * 6
+fitnessFun = fitnessFun_ap1(model);
+fitnessFun.jointPath=zeros(model.joint_num,inputData.spacenum+1);
+fitnessFun.parameter_bound=ones(model.joint_num,1)*[-pi, pi]*hyperparameter.ap1_delta;  %q * 6
 fitnessFun.obstacles=inputData.obstacles;
-fitnessFun.linkShapes = model.shape;
 
 %% 主规划过程
 main();

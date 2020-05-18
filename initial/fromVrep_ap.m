@@ -33,6 +33,23 @@ global inputData model
         path = reshape(vrep.simxUnpackFloats(signal),3,inputData.spacenum+1);
         disp('sampled path:')
         disp(path)
+        %% 采集机械臂的运动模型(DH参数)
+        vrep.simxSetIntegerSignal(clientID,'getDH_start',1,vrep.simx_opmode_oneshot);
+        while true
+            [res, signal]=vrep.simxGetIntegerSignal(clientID,'getDH_finish',vrep.simx_opmode_oneshot_wait);
+            if signal
+                vrep.simxClearIntegerSignal(clientID,'getDH_finish',vrep.simx_opmode_oneshot);
+                break;
+            end
+        end
+        [res, model.name]=vrep.simxGetStringSignal(clientID,'Data_manipulatorName',vrep.simx_opmode_oneshot_wait);
+        [res, raw_DH]=vrep.simxGetStringSignal(clientID,'Data_DH',vrep.simx_opmode_oneshot_wait);
+        DH=double(vrep.simxUnpackFloats(raw_DH));
+        model.joint_num=DH(1);
+        DH=DH(2:end);
+        model.DH=reshape(DH,4,length(DH)/4);
+        model.km=SerialLink([model.DH(1:2,:)',model.DH(4,:)',model.DH(3,:)'],...
+      'offset',model.DH(1,:)','name',model.name);
         %% 采样障碍物和机械臂3D建模
         n_obstacle=1;
         while true
@@ -69,7 +86,7 @@ global inputData model
             faces=faces(numFace+2:end);
         end
         total_link_vn=0;
-        for i=1:6
+        for i=1:model.joint_num
             numVex=int32(vex(1));
             numFace=faces(1);
             model.shape(i).vex=reshape(vex(2:numVex+1),3,numVex/3);

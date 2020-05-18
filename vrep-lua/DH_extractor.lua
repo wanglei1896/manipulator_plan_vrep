@@ -40,18 +40,21 @@ end
 
 function getParaFromTMatrix(DHT)
    local offset,d,alpha,a,ooffset,dd
+--   print(DHT)
    alpha=math.acos(lim_bound(DHT[11]))
    local salpha=math.sin(alpha); local calpha=math.cos(alpha);
    if approximate(salpha,0) then --special case
---      print('salpha is zero')
+--    print('salpha is zero')
       a=math.sqrt(DHT[4]^2+DHT[8]^2)
       local sum=arccos(DHT[1],DHT[5])
+--      print(math.cos(sum))
       if approximate(a,0) then
+--	 print('a is zero')
 	 offset=sum
 	 ooffset=0
       else
 	 offset=arccos(DHT[4]/a,DHT[8]/a)
-	 ooffset=offset-sum
+	 ooffset=(sum-offset)*calpha
       end
       d=DHT[12]
       dd=0

@@ -12,21 +12,15 @@ optimLog = optimLog_ap(optimLog.group_num); %优化有几个组
 
 %% 配置代价函数
 % 轨迹编码
-fitnessFun = fitnessFun_ap(model.km);
+fitnessFun = fitnessFun_ap2(model);
 for i=1:optimLog.group_num   % 为每组维护一个边界
     fitnessFun.parameter_bound(:,:,i)=[
-                    -pi, pi; -pi, pi; % vq * 6
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi; % aq * 6
-                    -pi, pi; -pi, pi;
-                    -pi, pi; -pi, pi;
+                    ones(model.joint_num,1)*[-pi, pi]; % vq
+                    ones(model.joint_num,1)*[-pi, pi]; % aq
                     0.1, 10]; % time
 end
 fitnessFun.spacenum = inputData.spacenum/optimLog.group_num;
-fitnessFun.joint_num = model.joint_num;
 fitnessFun.obstacles=inputData.obstacles;
-fitnessFun.linkShapes = model.shape;
 fitnessFun.obflag = false;
 
 % 为各组天牛的参数初始化值

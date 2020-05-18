@@ -1,4 +1,4 @@
-classdef fitnessFun_ap
+classdef fitnessFun_ap2
     %FITNESSFUN_AP 此处显示有关此类的摘要
     %   沿路径运动(along path)规划的代价函数
     
@@ -16,12 +16,15 @@ classdef fitnessFun_ap
     end
     
     methods
-        function obj = fitnessFun_ap(manipulator_model)
-            obj.d = manipulator_model.d;
-            obj.a = manipulator_model.a;
-            obj.alpha = manipulator_model.alpha;
-            obj.offset = manipulator_model.offset;
-            obj.base = manipulator_model.base.t;
+        function obj = fitnessFun_ap2(manipulator_model)
+            assert(size(manipulator_model.DH,1)==4)
+            obj.offset = manipulator_model.DH(1,:);
+            obj.d = manipulator_model.DH(2,:);
+            obj.alpha = manipulator_model.DH(3,:);
+            obj.a = manipulator_model.DH(4,:);
+            obj.base = manipulator_model.base;
+            obj.joint_num = manipulator_model.joint_num;
+            obj.linkShapes = manipulator_model.shape;
         end
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
@@ -64,7 +67,7 @@ classdef fitnessFun_ap
                 theta=ql(:,i);
                 min_dis=1;
                 trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
-                for j=1:6
+                for j=1:obj.joint_num
                     tran = trans(:,:,j+1);
                     for k=1:length(obj.obstacles)
                         vertices = tran(1:3,1:3)*obj.linkShapes(j).vex+tran(1:3,4);
@@ -126,29 +129,14 @@ classdef fitnessFun_ap
         end
         function T = fastForwardTrans(obj, theta)
             a=obj.a; d=obj.d; alpha=obj.alpha; 
-            base=eye(4); base(1:3,4)=obj.base;
+            base=obj.base;
             theta=theta'+obj.offset;
             % toolbox中自带的正运动学要调用对象，太慢，这里优化一个更快的版本
-            T=zeros(4,4,7);
+            T=zeros(4,4,obj.joint_num+1);
             T(:,:,1) = base; %joint1
-            T01=base*T_para(theta(1),d(1),a(1),alpha(1));
-            T(:,:,2) = T01; %joint2
-            T12=T_para(theta(2),d(2),a(2),alpha(2));
-            T02=T01*T12;
-            T(:,:,3) = T02; %joint3
-            T23=T_para(theta(3),d(3),a(3),alpha(3));
-            T03=T02*T23;
-            T(:,:,4) = T03; %joint4
-            T34=T_para(theta(4),d(4),a(4),alpha(4));
-            T04=T03*T34;
-            T(:,:,5) = T04; %joint5
-            T45=T_para(theta(5),d(5),a(5),alpha(5));
-            T05=T04*T45;
-            T(:,:,6) = T05; %joint6
-            T56=T_para(theta(6),d(6),a(6),alpha(6));
-            T06=T05*T56;
-            T(:,:,7) = T06; %end-effctor
-
+            for i=1:obj.joint_num
+                T(:,:,i+1) = T(:,:,i)*T_para(theta(i),d(i),a(i),alpha(i)); %joint2 -> end-effector
+            end
             function T = T_para(theta,d,a,alpha)
                 T=[cos(theta),-sin(theta)*cos(alpha),sin(theta)*sin(alpha),a*cos(theta);
                    sin(theta),cos(theta)*cos(alpha),-cos(theta)*sin(alpha),a*sin(theta);

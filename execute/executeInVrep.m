@@ -18,15 +18,15 @@ vrep.delete(); % call the destructor!
 disp('Program ended');
     
 function send2vrep(vrep, clientID)
-global outputData
+global outputData model
 %     diseredPath=inputData.path;
     joint_angle=outputData.trajectory;
     %joint_angle=outputData.jointPath;
     try
         % get handle
-        for i=1:6
+        for i=1:model.joint_num
             [res,handle_rigArmjoint(i)] = vrep.simxGetObjectHandle(clientID,...
-                ['UR5_joint',num2str(i)],vrep.simx_opmode_oneshot_wait);
+                [model.name,'_joint',num2str(i)],vrep.simx_opmode_oneshot_wait);
         end
         
         %Set the position of every joint
@@ -34,12 +34,9 @@ global outputData
             vrep.simxSetIntegerSignal(clientID,'SIG_execute',1,vrep.simx_opmode_oneshot);
             for i=1:size(joint_angle,2)-1
                 vrep.simxPauseCommunication(clientID,1);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(1),joint_angle(1,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(2),joint_angle(2,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(3),joint_angle(3,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(4),joint_angle(4,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(5),joint_angle(5,i),vrep.simx_opmode_oneshot);
-                vrep.simxSetJointPosition(clientID,handle_rigArmjoint(6),joint_angle(6,i),vrep.simx_opmode_oneshot);
+                for j=1:model.joint_num
+                    vrep.simxSetJointPosition(clientID,handle_rigArmjoint(j),joint_angle(j,i),vrep.simx_opmode_oneshot);
+                end
                 vrep.simxPauseCommunication(clientID,0);
 
                 %[returnCode,actualPosition(:,i)]=vrep.simxGetObjectPosition(clientID,tip_dummy,handle_rigArmjoint(1),vrep.simx_opmode_blocking);

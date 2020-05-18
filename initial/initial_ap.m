@@ -7,7 +7,7 @@ isTest=false;
 isFromVrep=true;
 
 %%% 初始化
-model = model_ur5();
+model = model_serialLink();
 optimLog = optimLog_ap(10);   %优化有几个组
 inputData = input_ap([[0.3;0.4;0], [0.3;0.4;0]+1*[0.3;-0.4;0]],... %输入的路径(默认)
                     optimLog.group_num*5);   %输入路径规范化后的采样段数
@@ -25,4 +25,4 @@ end
 
 inputData.pStart = eye(4);
 inputData.pStart(1:3,4) = inputData.path(:,1);
-inputData.qStart = model.km.ikunc(inputData.pStart);
+inputData.qStart = regular_JointPos(model.km.ikunc(inputData.pStart));

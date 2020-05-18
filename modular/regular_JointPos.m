@@ -6,6 +6,18 @@
 % 条件4：当有两组解时，取更大那组，如(-pi+0.1)与(2*pi-0.1)解应为(pi+0.1)和(2*pi-0.1)
 
 function [regqStart, regqFinal] = regular_JointPos(qStart, qFinal)
+    if nargin==1
+        for i=1:length(qStart)
+            if qStart(i)>=2*pi
+                regqStart(i)=qStart(i)-2*pi;
+            elseif qStart(i)<=-2*pi
+                regqStart(i)=qStart(i)+2*pi;
+            else
+                regqStart(i)=qStart(i);
+            end
+        end
+        return;
+    end
     for i=1:length(qStart)
         qs=qStart(i);qf=qFinal(i);
         qs=constrict(qs);
