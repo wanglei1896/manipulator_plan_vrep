@@ -12,7 +12,7 @@ classdef fitnessFun_ap2
         serial_number; %目前优化的是第几段
         target_path; %目前要优化段的目标路径(关节空间)
         parameter_bound;
-        obflag; %是否开启避障(耗时)
+        hyperparameter;
     end
     
     methods
@@ -33,7 +33,6 @@ classdef fitnessFun_ap2
             [fitness_value,cost_vec] = obj.evaluateTrajectory(result,parameters);
         end
         function [evaluate_value,cost_vec] = evaluateTrajectory(obj,result,parameters)
-            global hyperparameter
             ql=result(1:obj.joint_num,:);
             vl=result(obj.joint_num+1:2*obj.joint_num,:);
             al=result(2*obj.joint_num:3*obj.joint_num,:);
@@ -62,7 +61,7 @@ classdef fitnessFun_ap2
               oa表示避障指标
             %}
             oa=0;
-            if obj.obflag==true
+            if obj.hyperparameter.ap2_obflag==true
             for i=1:n_tj
                 theta=ql(:,i);
                 min_dis=1;
@@ -114,7 +113,7 @@ classdef fitnessFun_ap2
               fdis表示机械臂末端划过的轨迹长度
             %}
             fdis=0;
-            if obj.obflag==true
+            if obj.hyperparameter.ap2_obflag==true
                 dx=diff(pos(1,:)); dy=diff(pos(2,:)); dz=diff(pos(3,:));
                 dis=sqrt(dx.^2+dy.^2+dz.^2);
                 fdis=sum(dis);
@@ -124,7 +123,7 @@ classdef fitnessFun_ap2
             %}
             time=sum(parameters(end));
             cost_vec=[ft,fq,fdt,oa,fdis,time, Pos_punishment];
-            cost=cost_vec*[hyperparameter.ap2_tradeoff, zeros(1,length(Pos_punishment))]';
+            cost=cost_vec*[obj.hyperparameter.ap2_tradeoff, zeros(1,length(Pos_punishment))]';
             evaluate_value=1/(cost+eps); %防止/0错误
         end
         function T = fastForwardTrans(obj, theta)

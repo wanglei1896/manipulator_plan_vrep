@@ -3,10 +3,8 @@
 function result=model_serialLink()
   result.base = transl(0,0,0); %基座相对于世界坐标系的位姿
   result.DH=[];
-  for i=1:6
-    result.shape(i).vex=[];
-  end
-  result.joint_num=0;
+  result.joint_num=1;
+  result.shape(1).vex=[];
   result.km=[];
 end
 

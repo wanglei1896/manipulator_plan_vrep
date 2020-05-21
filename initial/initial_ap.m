@@ -2,7 +2,8 @@
 global  outputData ...
         inputData ...
         optimLog ...       %优化日志，算法优化过程中产生的信息（用于分析）
-        model           %机械臂的运动学模型
+        model ...         %机械臂的运动学模型
+        vrep %与vrep的通信工具
 isTest=false;
 isFromVrep=true;
 

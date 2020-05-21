@@ -11,6 +11,7 @@ classdef fitnessFun_ap1
         previousJPos; %上一个关节角度
         parameter_bound;
         jointPath; %规划出的关节空间对应路径
+        hyperparameter; %外部可调参数
     end
     
     methods
@@ -26,7 +27,6 @@ classdef fitnessFun_ap1
         end
         
         function [fitness_value,cost_vec] = fitnessf(obj, parameters)
-            global hyperparameter
             % 给优化算法回调用，注意接口与其保持一致
             thetas=[obj.previousJPos,obj.previousJPos+parameters'];
             %{
@@ -35,17 +35,18 @@ classdef fitnessFun_ap1
             fq=norm(parameters);
             [cost,cost_vec] = obj.evaluatePosture(thetas(:,2));
             cost_vec=[cost_vec,fq];
-            cost=[cost, fq]*[1,hyperparameter.ap1_to1]';
+            cost=[cost, fq]*[1,obj.hyperparameter.ap1_to1]';
             fitness_value=1/(cost+eps); %防止/0错误
         end
         function [cost,cost_vec] = evaluatePosture(obj,theta)
-            global hyperparameter
+            trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
             %{
               oa表示避障指标
             %}
             %collision_count=0; %用于统计轨迹上机械臂与障碍物的碰撞次数
+            oa=0;
+            if obj.hyperparameter.ap1_obflag==true
             min_dis=1;
-            trans=fastForwardTrans(obj,theta); %forwardTrans to get the transform matrix
             for j=1:obj.joint_num
                 tran = trans(:,:,j+1);
                 for k=1:length(obj.obstacles)
@@ -61,19 +62,20 @@ classdef fitnessFun_ap1
             %if min_dis>=1e-2
             %    oa=0;
             %else
-            if min_dis>hyperparameter.ob_e
+            if min_dis>obj.hyperparameter.ob_e
                 oa=1/min_dis;
             else% min_dis<=ob_e
-                oa=1/hyperparameter.ob_e;
+                oa=1/obj.hyperparameter.ob_e;
             end
-            oa=(oa*hyperparameter.ob_e)^hyperparameter.ob_beta;
+            oa=(oa*obj.hyperparameter.ob_e)^obj.hyperparameter.ob_beta;
+            end
             %{
               fdt表示机械臂末端与给定路径点的相符程度度量（越小越好）
             %}
             pos=trans(1:3,4,end);
             fdt=norm(obj.target_pos-pos);
             cost_vec=[fdt,oa];
-            cost=cost_vec*[1,hyperparameter.ap1_to2]';
+            cost=cost_vec*[1,obj.hyperparameter.ap1_to2]';
         end
         function T = fastForwardTrans(obj, theta)
             a=obj.a; d=obj.d; alpha=obj.alpha; 

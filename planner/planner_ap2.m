@@ -1,42 +1,31 @@
 %% along path 的规划过程
 % 
-global inputData optimLog model fitnessFun hyperparameter
 
-%% 超参数汇总：
-hyperparameter.ap2_tradeoff=[1 1 1 1 1 1]; %代价函数中各指标的混合比例
-
-
-%% optimLog更新，因此重置受其影响的变量
-% optimLog先清空，再在analyze/reprsent_ap.m中计算相应值
-optimLog = optimLog_ap(optimLog.group_num); %优化有几个组
-
+function outputData=planner_ap2(model, jointPath, obstacles, hyperparameter)
+global optimLog
+    input_spacenum = size(jointPath,2)-1;
+    group_size = optimLog.group_num;
 %% 配置代价函数
-% 轨迹编码
-fitnessFun = fitnessFun_ap2(model);
-for i=1:optimLog.group_num   % 为每组维护一个边界
-    fitnessFun.parameter_bound(:,:,i)=[
-                    ones(model.joint_num,1)*[-pi, pi]; % vq
-                    ones(model.joint_num,1)*[-pi, pi]; % aq
-                    0.1, 10]; % time
-end
-fitnessFun.spacenum = inputData.spacenum/optimLog.group_num;
-fitnessFun.obstacles=inputData.obstacles;
-fitnessFun.obflag = false;
+    % 轨迹编码
+    fitnessFun = fitnessFun_ap2(model);
+    fitnessFun.hyperparameter=hyperparameter;
+    for i=1:optimLog.group_num   % 为每组维护一个边界
+        fitnessFun.parameter_bound(:,:,i)=[
+                        ones(model.joint_num,1)*[-pi, pi]; % vq
+                        ones(model.joint_num,1)*[-pi, pi]; % aq
+                        0.1, 10]; % time
+    end
+    fitnessFun.spacenum = input_spacenum/optimLog.group_num;
+    fitnessFun.obstacles=obstacles;
 
-% 为各组天牛的参数初始化值
-% qTable的第一列为起始端点，后每一列为每段的右端点
-fitnessFun.qTable = initial_parameters();
-optimLog.qTable_history=fitnessFun.qTable;
-
-%% 主规划过程
-main();
-
-function main()
-global outputData optimLog fitnessFun model
+    % 为各组天牛的参数初始化值
+    % qTable的第一列为起始端点，后每一列为每段的右端点
+    fitnessFun.qTable = initial_parameters();
+    optimLog.qTable_history=fitnessFun.qTable;
+    
     %% 算法初始化
     sizepop = 40;
     iternum = 25;
-    group_size = optimLog.group_num;
 
     %% 调用算法规划
     disp('planning start.');
@@ -53,13 +42,12 @@ global outputData optimLog fitnessFun model
     get_trajectory();
     
     function update_solution(group_number)
-        global inputData
         bound=fitnessFun.parameter_bound(:,:,group_number);
         bound=reshape(bound,size(bound,1),size(bound,2));
 
         fitnessFun.serial_number = group_number;
-        path_index=equalDivide(inputData.spacenum,group_size,group_number);
-        fitnessFun.target_path = outputData.jointPath(:,path_index);
+        path_index=equalDivide(input_spacenum,group_size,group_number);
+        fitnessFun.target_path = jointPath(:,path_index);
         % 调用优化算法
         [fitness_history, fitvec_history,...
             solution_history,all_solution_history, optimization_time] ...
@@ -100,15 +88,18 @@ global outputData optimLog fitnessFun model
             outputData.segment_curtimes(iter+1) = outputData.segment_curtimes(iter)+outputData.segment_times(iter);
         end
         outputData.spacenum=size(outputData.trajectory,2)-1;
+        outputData.endPath=[];
+        outputData.jointPath=jointPath;
+    end
+    function qTable = initial_parameters()
+        assert(size(jointPath,1)==model.joint_num);
+        for ii=1:optimLog.group_num+1
+            path_index=equalDivide(input_spacenum,group_size,ii);
+            qTable.q(:,ii)=jointPath(:,path_index(1));
+        end
+        qTable.vq=zeros(model.joint_num,optimLog.group_num+1);
+        qTable.aq=zeros(model.joint_num,optimLog.group_num+1);
+        assert(size(qTable.q,1)==model.joint_num);
     end
 end
 
-function qTable = initial_parameters()
-global optimLog outputData model
-    assert(size(outputData.junctionPos,1)==model.joint_num);
-    assert(size(outputData.junctionPos,2)==optimLog.group_num+1);
-    qTable.q=outputData.junctionPos;
-    qTable.vq=zeros(model.joint_num,optimLog.group_num+1);
-    qTable.aq=zeros(model.joint_num,optimLog.group_num+1);
-    assert(size(qTable.q,1)==model.joint_num);
-end

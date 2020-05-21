@@ -1,3 +1,4 @@
+global vrep
 disp('Sample from V-rep');
 vrep.simxFinish(-1); % just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',19998,true,true,5000,5);
@@ -6,7 +7,7 @@ assert(clientID>-1);
 if (clientID>-1)
     disp('Connected to remote API server');
     % main
-    fromVrep(vrep, clientID);
+    fromVrep(clientID);
     % Before closing the connection to V-REP, make sure that the last command sent out had time to arrive. You can guarantee this with (for example):
     vrep.simxGetPingTime(clientID);
     % Now close the connection to V-REP:
@@ -16,8 +17,8 @@ else
 end
 vrep.delete(); % call the destructor!
 
-function fromVrep(vrep, clientID)
-global inputData model
+function fromVrep(clientID)
+global inputData model vrep
     try
         %% 采样路径
         vrep.simxSetIntegerSignal(clientID,'SIG_start',1,vrep.simx_opmode_oneshot);
