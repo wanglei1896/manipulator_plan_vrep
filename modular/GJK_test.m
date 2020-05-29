@@ -5,7 +5,6 @@
 function GJK_test()
 global inputData model outputData
     %How many iterations to allow for collision detection.
-    iterationsAllowed = 6;
 
     % Make a figure
     fig = figure;

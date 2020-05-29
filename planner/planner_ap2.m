@@ -30,12 +30,17 @@ global optimLog
     %% 调用算法规划
     disp('planning start.');
     % 第一轮,奇数编号结点
+    count=0;
     for i=1:2:group_size
         update_solution(i)
+        count=count+1;
+        optimLog.progress=0.5+count/group_size*0.5;
     end
     % 第二轮,偶数编号结点
     for i=2:2:group_size
         update_solution(i)
+        count=count+1;
+        optimLog.progress=0.5+count/group_size*0.5;
     end
     disp('planning ended');
     
@@ -52,7 +57,6 @@ global optimLog
         [fitness_history, fitvec_history,...
             solution_history,all_solution_history, optimization_time] ...
             = AlgorithmBSO_fun(sizepop, iternum, bound, @fitnessFun.fitnessf);
-        
         optimLog.group(group_number).fitness_history=[optimLog.group(group_number).fitness_history;fitness_history];
         optimLog.group(group_number).fitvec_history=[optimLog.group(group_number).fitvec_history;fitvec_history];
         optimLog.group(group_number).solution_history=[optimLog.group(group_number).solution_history;solution_history];

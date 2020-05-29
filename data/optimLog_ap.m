@@ -8,6 +8,7 @@ function result = optimLog_ap(group_num)
         result.group(i).all_solution_history = [];
         result.group(i).all_fitness_history = [];
     end
+    result.progress=0; %用于记录进度
     result.sum.fitness_history = [];
     result.qTable_history = [];
     result.jointPath_history = [];

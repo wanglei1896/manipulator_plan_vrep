@@ -30,9 +30,10 @@ end
 function plotInWS()
     global optimLog inputData
     axis([-1,1,-1,1,-1,1])
-    ni=length(optimLog.group(1).fitness_history)/optimLog.round_num;
+    round_num=1;
+    ni=length(optimLog.group(1).fitness_history)/round_num;
     ng=optimLog.group_num;
-    for i=1:2*ni*optimLog.round_num
+    for i=1:2*ni*round_num
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'k')
         hold on
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:),'rx')
@@ -59,7 +60,8 @@ end
 function plotInCS(opt)
     global optimLog inputData fitnessFun outputData
     assert(opt=='w'||opt=='c')
-    ni=length(optimLog.group(1).fitness_history)/optimLog.round_num;
+    round_num=1;
+    ni=length(optimLog.group(1).fitness_history)/round_num;
     ng=optimLog.group_num;
     ppg = fitnessFun.spacenum+1;
     if opt=='w'
@@ -71,7 +73,7 @@ function plotInCS(opt)
         path_history = optimLog.jointPath_history;
         ylimits=[-pi, pi];
     end
-    for i=1:2*ni*optimLog.round_num
+    for i=1:2*ni*round_num
         plot(targetPath','k+')
         hold on
         myplot([],targetPath')
@@ -112,10 +114,11 @@ function calculateHistoy()
     global optimLog fitnessFun outputData inputData
     n = optimLog.group_num;
     nj = size(optimLog.qTable_history(1).q, 1);
-    ni = length(optimLog.group(1).fitness_history)/optimLog.round_num;  %迭代次数
+    round_num=1;
+    ni = length(optimLog.group(1).fitness_history)/round_num;  %迭代次数
     fitnessFun.qTable = optimLog.qTable_history(1);
     tic
-    for ii=1:optimLog.round_num
+    for ii=1:round_num
         for i=1:ni
             if i==ni && ii==3
                 disp('')

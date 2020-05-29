@@ -20,6 +20,7 @@ global optimLog
     disp('planning start.');
     for i=2:inputData.spacenum+1
         update_solution(i);
+        optimLog.progress=(i-1)/inputData.spacenum*0.5;
     end
     disp('planning ended');
     
