@@ -7,7 +7,7 @@ function plotManipulator(manipulator, thetas, axe)
         axis equal
         axe=fig.Children;
     end
-    hold on
+    hold(axe,'on')
 
     % Make shape 1 (links)
     S1Objs=[]; S1Coords=[];
@@ -16,15 +16,14 @@ function plotManipulator(manipulator, thetas, axe)
         S1.Faces = link.face'+1;
         S1.FaceVertexCData = jet(size(S1.Vertices,1));
         S1.FaceColor = 'interp';
-        S1Objs = [S1Objs, patch(S1)];
+        S1Objs = [S1Objs, patch(axe,S1)];
         S1Coords = [S1Coords, S1];
     end
     
-    hold off
-    %axis([-1 1 -1 1 -1 1])
+    hold(axe,'off')
     %axe.Visible = 'off'; % Turn off the axis for more pleasant viewing.
     axe.Color = [1 1 1];
-    rotate3d on;
+    rotate3d(axe,'on');
     
     for j=1:size(thetas,2)
         trans=fastForwardTrans(thetas(:,j)); %forwardTrans to get the transform matrix

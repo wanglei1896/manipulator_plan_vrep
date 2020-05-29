@@ -49,8 +49,9 @@ global inputData model vrep
         model.joint_num=DH(1);
         DH=DH(2:end);
         model.DH=reshape(DH,4,length(DH)/4);
-        model.km=SerialLink([model.DH(1:2,:)',model.DH(4,:)',model.DH(3,:)'],...
-      'offset',model.DH(1,:)','name',model.name);
+        
+        %model.km=SerialLink([model.DH(1:2,:)',model.DH(4,:)',model.DH(3,:)'],...
+      %'offset',model.DH(1,:)','name',model.name);
         %% 采样障碍物和机械臂3D建模
         n_obstacle=1;
         while true
