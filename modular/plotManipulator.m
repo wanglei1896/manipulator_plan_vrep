@@ -31,6 +31,7 @@ function plotManipulator(manipulator, thetas, axe)
             tran = trans(:,:,i+1);
             S1Objs(i).Vertices = (tran(1:3,1:3)*S1Coords(i).Vertices'+tran(1:3,4))';
         end
+        pause(0.1)
         drawnow;
     end
     function pos = fastForwardTrans(theta)

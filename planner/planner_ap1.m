@@ -51,12 +51,12 @@ global optimLog
 
     function plot_posture()
         % 展示规划结果
-        model.km.plot(inputData.qStart,'trail',{'r'})
-        hold on
         plot3(inputData.obstacles(1).vex(1,:),inputData.obstacles(1).vex(2,:),inputData.obstacles(1).vex(3,:))
+        hold on
         plot3(inputData.obstacles(2).vex(1,:),inputData.obstacles(2).vex(2,:),inputData.obstacles(2).vex(3,:))
         plot3(inputData.obstacles(3).vex(1,:),inputData.obstacles(3).vex(2,:),inputData.obstacles(3).vex(3,:))
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:))
-        model.km.plot(jointPath','trail',{'r'},'delay',0.1)
+        axis equal
+        plotManipulator(model, outputData.trajectory(:,:),gca)
     end
 end

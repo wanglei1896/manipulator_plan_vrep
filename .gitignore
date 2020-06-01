@@ -20,4 +20,4 @@
 /app/**
 
 # exceptions
-!/app/MTPBSO.mlappinstall
+!/app/MTPBSO.mlapp
