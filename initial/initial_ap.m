@@ -12,7 +12,7 @@ isFromVrep=true;
 %%% 初始化
 hyperparameter = hyperparameter_ap();
 model = model_serialLink();
-optimLog = optimLog_ap(10);   %优化有几个组
+optimLog = optimLog_ap(6);   %优化有几个组
 inputData = input_ap();
 inputData.spacenum=optimLog.group_num*5;
 % isTest开启时元循环，将上次优化的结果路径作为本次的目标路径

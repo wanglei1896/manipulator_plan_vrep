@@ -7,7 +7,7 @@ function plotManipulator(manipulator, thetas, axe)
         axis equal
         axe=fig.Children;
     end
-    hold(axe,'on')
+    %hold(axe,'on')
 
     % Make shape 1 (links)
     S1Objs=[]; S1Coords=[];
@@ -20,7 +20,7 @@ function plotManipulator(manipulator, thetas, axe)
         S1Coords = [S1Coords, S1];
     end
     
-    hold(axe,'off')
+    %hold(axe,'off')
     %axe.Visible = 'off'; % Turn off the axis for more pleasant viewing.
     axe.Color = [1 1 1];
     rotate3d(axe,'on');

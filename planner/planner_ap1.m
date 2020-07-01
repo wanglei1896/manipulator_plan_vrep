@@ -57,6 +57,7 @@ global optimLog
         plot3(inputData.obstacles(3).vex(1,:),inputData.obstacles(3).vex(2,:),inputData.obstacles(3).vex(3,:))
         plot3(inputData.path(1,:),inputData.path(2,:),inputData.path(3,:))
         axis equal
-        plotManipulator(model, outputData.trajectory(:,:),gca)
+        model.km.plot(fitnessFun.jointPath(:,:)','trail',{'r'},'delay',0.1);
+        %plotManipulator(model, fitnessFun.jointPath(:,:),gca)
     end
 end

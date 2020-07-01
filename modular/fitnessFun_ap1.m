@@ -23,6 +23,7 @@ classdef fitnessFun_ap1
             obj.a = manipulator_model.DH(4,:);
             obj.base = manipulator_model.base;
             obj.joint_num = manipulator_model.joint_num;
+            
             obj.linkShapes = manipulator_model.shape;
         end
         
@@ -35,7 +36,7 @@ classdef fitnessFun_ap1
             fq=norm(parameters);
             [cost,cost_vec] = obj.evaluatePosture(thetas(:,2));
             cost_vec=[cost_vec,fq];
-            cost=[cost, fq]*[1,obj.hyperparameter.ap1_to1]';
+            cost=[cost, fq]*[1,obj.hyperparameter.ap1_to2]';
             fitness_value=1/(cost+eps); %防止/0错误
         end
         function [cost,cost_vec] = evaluatePosture(obj,theta)
@@ -75,7 +76,7 @@ classdef fitnessFun_ap1
             pos=trans(1:3,4,end);
             fdt=norm(obj.target_pos-pos);
             cost_vec=[fdt,oa];
-            cost=cost_vec*[1,obj.hyperparameter.ap1_to2]';
+            cost=cost_vec*[1,obj.hyperparameter.ap1_to1]';
         end
         function T = fastForwardTrans(obj, theta)
             a=obj.a; d=obj.d; alpha=obj.alpha; 

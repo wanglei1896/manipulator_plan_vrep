@@ -3,6 +3,8 @@ start_up;
 
 %% 配置、环境数据获取
 initial_ap;
+hyperparameter.ap1_obflag=false;
+hyperparameter.ap2_obflag=false;
 
 %% 规划过程
 planner_ap;
