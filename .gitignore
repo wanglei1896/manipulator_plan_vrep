@@ -6,6 +6,7 @@
 **/*.dvi
 **/*.log
 **/*.synctex
+**/*.pdf
 
 # vrep的远程api环境
 /connectionTool/**
