@@ -46,10 +46,16 @@ classdef fitnessFun_ap2
             %}
             ft=0;
             maxv=pi;
-            for v=abs(vl)-maxv
-                for vs=v'
-                    if vs > 0
-                        ft=ft+vs;
+            maxa=pi/2;
+            for ft_i=1:obj.joint_num
+                for ft_j=1:n_tj
+                    ex_v=abs(vl(ft_i,ft_j))-maxv;
+                    ex_a=abs(al(ft_i,ft_j))-maxa;
+                    if ex_v>0
+                        ft=ft+ex_v;
+                    end
+                    if ex_a>0
+                        ft=ft+ex_a;
                     end
                 end
             end

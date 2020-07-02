@@ -1,20 +1,20 @@
-%% along path 的规划过程
-% 
+%% path tracking规划的第二步
+%   根据上一步得到的各连接点处关节位置用多段多项式生成最终轨迹
 
 function outputData=planner_ap2(model, jointPath, obstacles, hyperparameter)
-global optimLog
+global optimLog fitnessFun
     input_spacenum = size(jointPath,2)-1;
     group_size = optimLog.group_num;
 %% 配置代价函数
     % 轨迹编码
     fitnessFun = fitnessFun_ap2(model);
     fitnessFun.hyperparameter=hyperparameter;
-    for i=1:optimLog.group_num   % 为每组维护一个边界
-        fitnessFun.parameter_bound(:,:,i)=[
+    %for i=1:optimLog.group_num   % 为每组维护一个边界
+    fitnessFun.parameter_bound=[
                         ones(model.joint_num,1)*[-pi, pi]; % vq
                         ones(model.joint_num,1)*[-pi, pi]; % aq
                         0.1, 10]; % time
-    end
+    %end
     fitnessFun.spacenum = input_spacenum/optimLog.group_num;
     fitnessFun.obstacles=obstacles;
 
@@ -47,8 +47,8 @@ global optimLog
     get_trajectory();
     
     function update_solution(group_number)
-        bound=fitnessFun.parameter_bound(:,:,group_number);
-        bound=reshape(bound,size(bound,1),size(bound,2));
+        bound=fitnessFun.parameter_bound;%(:,:,group_number);
+        %bound=reshape(bound,size(bound,1),size(bound,2));
 
         fitnessFun.serial_number = group_number;
         path_index=equalDivide(input_spacenum,group_size,group_number);
@@ -71,7 +71,7 @@ global optimLog
 
     function get_trajectory()
        % 综合各段，得出最终轨迹(合并第一段和各偶数点优化的段)
-        outputData.trajectory = fitnessFun.qTable.q(:,1);
+        outputData.trajectory = [fitnessFun.qTable.q(:,1);fitnessFun.qTable.vq(:,1);fitnessFun.qTable.aq(:,1)];
         assert(size(outputData.trajectory,2)==1) %trajectory中角度应存在每列上
         outputData.segment_times=zeros(1,group_size);
         outputData.segment_curtimes=zeros(1,group_size+1);
@@ -81,11 +81,11 @@ global optimLog
             last_solution = optimLog.group(iter).solution_history(end,:);
             last_result = fitnessFun.convertSolutionToTrajectory(last_solution);
             if iter==1
-                outputData.trajectory = [outputData.trajectory, last_result(1:model.joint_num,2:fitnessFun.spacenum+1)];%舍弃各组的第一个点，以免重复
+                outputData.trajectory = [outputData.trajectory, last_result(:,2:fitnessFun.spacenum+1)];%舍弃各组的第一个点，以免重复
             elseif mod(iter,2)==0
-                outputData.trajectory = [outputData.trajectory, last_result(1:model.joint_num,2:end)]; 
+                outputData.trajectory = [outputData.trajectory, last_result(:,2:end)]; 
                 % 轨迹中各段连接点处位置应与qTable中相同
-                assert(norm(outputData.trajectory(:,iter*fitnessFun.spacenum+1)...
+                assert(norm(outputData.trajectory(1:model.joint_num,iter*fitnessFun.spacenum+1)...
                     -fitnessFun.qTable.q(:,iter+1))<1e-4)
             end
             outputData.segment_times(iter) = last_solution(end);
