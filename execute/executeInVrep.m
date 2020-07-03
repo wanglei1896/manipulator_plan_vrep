@@ -1,3 +1,5 @@
+% 规划生成的数据(outputData)在vrep中执行，并从vrep中收集一些数据(fromVrepData)
+
 global vrep
 %clear vrep clinetID
 disp('Send to V-rep');
@@ -19,7 +21,7 @@ vrep.delete(); % call the destructor!
 disp('Program ended');
     
 function send2vrep(clientID)
-global outputData model vrep
+global outputData model vrep fromVrepData
 %     diseredPath=inputData.path;
     joint_angle=outputData.trajectory;
     %joint_angle=outputData.jointPath;

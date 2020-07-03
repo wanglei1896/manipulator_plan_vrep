@@ -45,8 +45,8 @@ classdef fitnessFun_ap2
               此指标易引发运动时间(t1、t2)的扩张，最好配合'time'指标使用
             %}
             ft=0;
-            maxv=pi;
-            maxa=pi/2;
+            maxv=obj.hyperparameter.ap2_maxv;
+            maxa=obj.hyperparameter.ap2_maxa;
             for ft_i=1:obj.joint_num
                 for ft_j=1:n_tj
                     ex_v=abs(vl(ft_i,ft_j))-maxv;

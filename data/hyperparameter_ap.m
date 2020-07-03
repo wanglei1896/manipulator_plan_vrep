@@ -6,6 +6,8 @@ function result = hyperparameter_ap()
     result.ap1_to2=0; %前两者(fdt和oa)与fq(前一位姿与后一位姿距离)的混合比例，tradeoff
     
     result.ap2_tradeoff=[1 0 1 1 1 1]; %代价函数中各指标的混合比例
+    result.ap2_maxv=pi; %关节速度限制
+    result.ap2_maxa=pi/2; %关节加速度限制
     result.ap2_obflag=true; %是否开启避障(耗时)
     
     result.ob_e=1e-3; %避障部分的最小距离，低于此最小距离则代价不再增长

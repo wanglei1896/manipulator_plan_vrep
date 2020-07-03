@@ -1,1 +1,3 @@
 % 格式化机械臂距离障碍物的最小距离随时间变化图
+global fromVrepData
+plot(fromVrepData.mindis_variation)

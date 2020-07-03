@@ -4,13 +4,15 @@ global  outputData ...
         optimLog ...       %优化日志，算法优化过程中产生的信息（用于分析）
         model ...         %机械臂的运动学模型
         vrep ...        %与vrep的通信工具
-        hyperparameter   %待调参数
+        hyperparameter ...   %待调参数
+        fromVrepData %来自vrep的数据
     
 isTest=false;
 isFromVrep=true;
 
 %%% 初始化
 hyperparameter = hyperparameter_ap();
+fromVrepData = fromVrepData_ap();
 model = model_serialLink();
 optimLog = optimLog_ap(6);   %优化有几个组
 inputData = input_ap();
