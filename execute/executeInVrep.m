@@ -27,13 +27,21 @@ global outputData model vrep fromVrepData
     %joint_angle=outputData.jointPath;
     try
         % get handle
+        [res,handle_vision] = vrep.simxGetObjectHandle(clientID,...
+                'Vision_sensor',vrep.simx_opmode_oneshot_wait);
         for i=1:model.joint_num
             [res,handle_rigArmjoint(i)] = vrep.simxGetObjectHandle(clientID,...
                 [model.name,'_joint',num2str(i)],vrep.simx_opmode_oneshot_wait);
         end
         
         %Set the position of every joint
+        
         while(vrep.simxGetConnectionId(clientID) ~= -1) % while v-rep connection is still active
+            snapshots=[];
+            snapshots=uint8(snapshots);
+            [~,resolution,image]=vrep.simxGetVisionSensorImage2(...
+                clientID,handle_vision,0,vrep.simx_opmode_streaming);
+            snapshot_count=0;
             vrep.simxSetIntegerSignal(clientID,'SIG_execute',1,vrep.simx_opmode_oneshot);
             for i=1:size(joint_angle,2)-1
                 vrep.simxPauseCommunication(clientID,1);
@@ -41,10 +49,40 @@ global outputData model vrep fromVrepData
                     vrep.simxSetJointPosition(clientID,handle_rigArmjoint(j),joint_angle(j,i),vrep.simx_opmode_oneshot);
                 end
                 vrep.simxPauseCommunication(clientID,0);
-
-                %[returnCode,actualPosition(:,i)]=vrep.simxGetObjectPosition(clientID,tip_dummy,handle_rigArmjoint(1),vrep.simx_opmode_blocking);
+                
+                [returnCode,resolution,image]=vrep.simxGetVisionSensorImage2(...
+                    clientID,handle_vision,0,vrep.simx_opmode_buffer);
+                if ~isempty(image)
+                    snapshot_count=snapshot_count+1;
+                    snapshots(:,:,:,snapshot_count)=image;
+                end
                 pause(0.1);
             end
+            
+            vrep.simxSetIntegerSignal(clientID,'SIG_execute_end',1,vrep.simx_opmode_oneshot);
+            while true
+                [res, signal]=vrep.simxGetIntegerSignal(clientID,'SIG_send_distance',vrep.simx_opmode_oneshot_wait);
+                if signal==1
+                    [res, raw_distance]=vrep.simxGetStringSignal(clientID,'Data_distance',vrep.simx_opmode_oneshot_wait);
+                    vrep.simxSetIntegerSignal(clientID,'SIG_send_distance',0,vrep.simx_opmode_oneshot);
+                    break;
+                end
+            end
+            %{
+            pause(0.1);
+            vrep.simxSetIntegerSignal(clientID,'SIG_send_sanpshot',1,vrep.simx_opmode_oneshot);
+            snapshot_count=0;
+            while true
+                [res, send_sanpshot]=vrep.simxGetIntegerSignal(clientID,'SIG_send_sanpshot',vrep.simx_opmode_oneshot_wait);
+                if send_sanpshot==2
+                    break;
+                end
+                snapshot_count=snapshot_count+1;
+                [res, raw_snapshot]=vrep.simxGetStringSignal(clientID,'Data_snapshots',vrep.simx_opmode_oneshot_wait);
+                snapshots(snapshot_count,:)=double(vrep.simxUnpackFloats(raw_snapshot));
+            end
+            fromVrepData.snapshot=snapshots;
+            %}
             break;
         end
     catch e
@@ -52,5 +90,7 @@ global outputData model vrep fromVrepData
         disp(['error in "', e.stack(1).name, '": line ', num2str(e.stack(1).line)])
         disp(e.message)
     end
-    vrep.simxSetIntegerSignal(clientID,'SIG_execute',0,vrep.simx_opmode_oneshot);
+    fromVrepData.snapshot=snapshots;
+    fromVrepData.mindis_variation=double(vrep.simxUnpackFloats(raw_distance));
+    %vrep.simxSetIntegerSignal(clientID,'SIG_execute',0,vrep.simx_opmode_oneshot);
 end
