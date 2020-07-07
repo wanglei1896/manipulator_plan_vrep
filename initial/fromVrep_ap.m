@@ -20,6 +20,10 @@ vrep.delete(); % call the destructor!
 function fromVrep(clientID)
 global inputData model vrep
     try
+        [res,taskName]=vrep.simxGetStringSignal(clientID,'TaskName',vrep.simx_opmode_oneshot_wait);
+        assert(res==0);
+        inputData.task_name=taskName;
+        disp(['task name: ', inputData.task_name])
         %% 采样路径
         vrep.simxSetIntegerSignal(clientID,'SIG_start',1,vrep.simx_opmode_oneshot);
         vrep.simxSetIntegerSignal(clientID,'SIG_spacenum',inputData.spacenum,vrep.simx_opmode_oneshot);
@@ -44,6 +48,7 @@ global inputData model vrep
             end
         end
         [res, model.name]=vrep.simxGetStringSignal(clientID,'Data_manipulatorName',vrep.simx_opmode_oneshot_wait);
+        model.name=replace(model.name,'_',' ');
         [res, raw_DH]=vrep.simxGetStringSignal(clientID,'Data_DH',vrep.simx_opmode_oneshot_wait);
         DH=double(vrep.simxUnpackFloats(raw_DH));
         model.joint_num=DH(1);
@@ -53,16 +58,17 @@ global inputData model vrep
         model.km=SerialLink([model.DH(1:2,:)',model.DH(4,:)',model.DH(3,:)'],...
       'offset',model.DH(1,:)','name',model.name);
         %% 采样障碍物和机械臂3D建模
-        n_obstacle=1;
+        n_obstacle=0;
+        [res, ohandle]=vrep.simxGetObjectHandle(clientID,'Obstacles',vrep.simx_opmode_oneshot_wait);
         while true
-            [res, ohandle] = vrep.simxGetObjectHandle(clientID,['obstacle_',num2str(n_obstacle)],vrep.simx_opmode_oneshot_wait);
-            %disp(ohandle)
-            if res~=0  %不知道有多少个障碍物，按编号1开始get，直到get不到为止
+            [res, cohandle] = vrep.simxGetObjectChild(clientID,ohandle,n_obstacle,vrep.simx_opmode_oneshot_wait);
+            if cohandle==-1
                 break;
             end
+            disp(cohandle)
             n_obstacle=n_obstacle+1;
         end
-        inputData.obstacle_num=n_obstacle-1;
+        inputData.obstacle_num=n_obstacle;
         disp([num2str(inputData.obstacle_num),' obstacles in total.'])
         vrep.simxSetIntegerSignal(clientID,'getVex_start',1,vrep.simx_opmode_oneshot);
         while true

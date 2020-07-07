@@ -5,6 +5,7 @@
 %                      yseq; 
 %                      zseq] 
 function result = input_ap()
+    result.task_name = 'test'; %要完成的任务的名称，具体任务由vrep端配置
     result.pStart = [];
     result.qStart = [];
     result.spacenum = 0;

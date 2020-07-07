@@ -84,7 +84,8 @@ function getParaFromTMatrix(DHT)
 --   print(constructDHT)
    for i=1,#DHT,1 do
       if not approximate(DHT[i],constructDHT[i]) then
-	 print(i,'something wrong')
+         print(i,'something wrong')
+	 print(DHT[i], constructDHT[i])
       end
    end   
    return offset,d,alpha,a,ooffset,dd

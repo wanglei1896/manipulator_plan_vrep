@@ -23,7 +23,7 @@ disp('Program ended');
 function send2vrep(clientID)
 global outputData model vrep fromVrepData
 %     diseredPath=inputData.path;
-    joint_angle=outputData.trajectory;
+    joint_angle=outputData.trajectory(1:model.joint_num,:);
     %joint_angle=outputData.jointPath;
     try
         % get handle

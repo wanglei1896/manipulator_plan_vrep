@@ -11,5 +11,12 @@ for i=2:2:optimLog.group_num
 end
 optimLog.sum.fitness_history=[sum1;sum2];
 %}
-
-plot(optimLog.sum.fitness_history)
+plotCost();
+function plotCost()
+global optimLog
+    plot(optimLog.sum.fitness_history)
+    ax=gca;
+    ax.FontSize=12;
+    ax.YLabel.String = 'Cost Value';
+    ax.XLabel.String = 'Iteration times';
+end

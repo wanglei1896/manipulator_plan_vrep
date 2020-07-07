@@ -11,10 +11,14 @@ global outputData
         t=[t, temp(2:end)];
     end
     plot(t, outputData.endPath','-');
-    legend x_x(t) x_y(t) x_z(t)
+    lgd=legend('x_x(t)', 'x_y(t)', 'x_z(t)');
+    lgd.NumColumns=3;
     hold on,
     grid on,
-    xticks(outputData.segment_curtimes) %显示重要指示线
-    yticks(-2*pi:pi/2:2*pi) %同上
-    %yticklabels({'-2\pi','-1.5\pi','-\pi','-0.5\pi','0','0.5\pi','\pi','1.5\pi','2\pi'})
+    xticks(round(outputData.segment_curtimes,2)) %显示重要指示线
+    ax=gca;
+    ax.FontSize=12;
+    ax.XLabel.String='Time (sec)';
+    ax.YLabel.String='End-effector Position (m)';
+    ax.XLim(2)=outputData.segment_curtimes(end);
 end
