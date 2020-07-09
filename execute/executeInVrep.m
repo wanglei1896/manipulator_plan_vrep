@@ -29,6 +29,7 @@ global outputData model vrep fromVrepData
         % get handle
         [res,handle_vision] = vrep.simxGetObjectHandle(clientID,...
                 'Vision_sensor',vrep.simx_opmode_oneshot_wait);
+        handle_rigArmjoint=zeros(1,model.joint_num);
         for i=1:model.joint_num
             [res,handle_rigArmjoint(i)] = vrep.simxGetObjectHandle(clientID,...
                 [model.name,'_joint',num2str(i)],vrep.simx_opmode_oneshot_wait);
@@ -43,10 +44,11 @@ global outputData model vrep fromVrepData
                 clientID,handle_vision,0,vrep.simx_opmode_streaming);
             snapshot_count=0;
             vrep.simxSetIntegerSignal(clientID,'SIG_execute',1,vrep.simx_opmode_oneshot);
-            for i=1:size(joint_angle,2)-1
+            for i=1:size(joint_angle,2)
                 vrep.simxPauseCommunication(clientID,1);
                 for j=1:model.joint_num
-                    vrep.simxSetJointPosition(clientID,handle_rigArmjoint(j),joint_angle(j,i),vrep.simx_opmode_oneshot);
+                    ret=vrep.simxSetJointPosition(clientID,handle_rigArmjoint(j),joint_angle(j,i),vrep.simx_opmode_oneshot);
+                    %disp(ret)
                 end
                 vrep.simxPauseCommunication(clientID,0);
                 
@@ -57,6 +59,7 @@ global outputData model vrep fromVrepData
                     snapshots(:,:,:,snapshot_count)=image;
                 end
                 pause(0.1);
+                
             end
             
             vrep.simxSetIntegerSignal(clientID,'SIG_execute_end',1,vrep.simx_opmode_oneshot);

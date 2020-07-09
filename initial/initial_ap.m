@@ -14,9 +14,9 @@ isFromVrep=true;
 hyperparameter = hyperparameter_ap();
 fromVrepData = fromVrepData_ap();
 model = model_serialLink();
-optimLog = optimLog_ap(6);   %优化有几个组
+optimLog = optimLog_ap(4);   %优化有几个组
 inputData = input_ap();
-inputData.spacenum=optimLog.group_num*5;
+inputData.spacenum=optimLog.group_num*10;
 % isTest开启时元循环，将上次优化的结果路径作为本次的目标路径
 if ~isequal(outputData,[]) && ~isequal(outputData.endPath,[]) && isTest
     inputData=input_ap(outputData.endPath,20);

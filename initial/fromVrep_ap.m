@@ -48,7 +48,6 @@ global inputData model vrep
             end
         end
         [res, model.name]=vrep.simxGetStringSignal(clientID,'Data_manipulatorName',vrep.simx_opmode_oneshot_wait);
-        model.name=replace(model.name,'_',' ');
         [res, raw_DH]=vrep.simxGetStringSignal(clientID,'Data_DH',vrep.simx_opmode_oneshot_wait);
         DH=double(vrep.simxUnpackFloats(raw_DH));
         model.joint_num=DH(1);
@@ -56,7 +55,7 @@ global inputData model vrep
         model.DH=reshape(DH,4,length(DH)/4);
         
         model.km=SerialLink([model.DH(1:2,:)',model.DH(4,:)',model.DH(3,:)'],...
-      'offset',model.DH(1,:)','name',model.name);
+      'offset',model.DH(1,:)','name',replace(model.name,'_',' '));
         %% 采样障碍物和机械臂3D建模
         n_obstacle=0;
         [res, ohandle]=vrep.simxGetObjectHandle(clientID,'Obstacles',vrep.simx_opmode_oneshot_wait);
