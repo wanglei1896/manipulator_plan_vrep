@@ -4,7 +4,7 @@ plotVrepPlan();
 function plotVrepPlan()
 global fromVrepData
     num=size(fromVrepData.snapshot,4);
-    index=[1,floor(num/4),floor(num/2),floor(num/4*3),num];
+    index=[3,floor(num/4),floor(num/2),floor(num/4*3),num];
     
     for i=1:length(index)
         subplot(150+i),

@@ -69,6 +69,7 @@ end
 
 function init()
    sim.setIntegerSignal("getVex_start",0)
+   print(obstacle_handles)
    --getVertex()
 end
 

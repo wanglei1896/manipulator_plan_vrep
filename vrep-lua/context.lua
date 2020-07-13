@@ -9,7 +9,17 @@ for i=1,jointNum,1 do
 end
 
 -- 约定2：障碍物的模型放在名为'Obstacles'的dummy下
-obstacle_handles=sim.getObjectsInTree(sim.getObjectHandle('Obstacles'), sim.object_shape_type)
+ohandle=sim.getObjectHandle('Obstacles')
+obstacle_handles={}
+local nobstacle=0
+while true do
+   local h=sim.getObjectChild(ohandle,nobstacle)
+   nobstacle=nobstacle+1
+   if h==-1 then break
+   else
+      obstacle_handles[nobstacle]=h
+   end
+end
 
 -- 约定3: 要追踪的path对象命名为'targetPath',并用一个名为'target'的dummy去采样路径点
 -- 注意：'targetPath'和'target'之间不能是父子
