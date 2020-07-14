@@ -1,12 +1,14 @@
--- 约定1：要控制的机械臂放在名为'manipulators'的dummy下
+-- 约定1：要控制的机械臂放在名为'manipulators'的dummy下,机械臂的末端用一个名为'tip'的dummy表示
 mhandle=sim.getObjectChild(sim.getObjectHandle('manipulators'),0)
 jhandle=sim.getObjectsInTree(mhandle,sim.object_joint_type)
 jointNum=#jhandle
+jhandle[jointNum+1]=sim.getObjectHandle('tip')
 name=sim.getObjectName(mhandle);
 link_handles={-1,-1,-1,-1,-1,-1} --连杆object的handle
 for i=1,jointNum,1 do
    link_handles[i]=sim.getObjectHandle(name.."_link"..(i+1))
 end
+
 
 -- 约定2：障碍物的模型放在名为'Obstacles'的dummy下
 ohandle=sim.getObjectHandle('Obstacles')
