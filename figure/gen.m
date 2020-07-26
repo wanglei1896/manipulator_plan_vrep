@@ -2,8 +2,8 @@
 
 %% 配置任务
 initial_ap;
-%hyperparameter.ap1_obflag=false;
-%hyperparameter.ap2_obflag=false;
+hyperparameter.ap1_obflag=true;
+hyperparameter.ap2_obflag=false;
 for lambda11=[1,2]
     disp(['task: ',inputData.task_name])
     disp(['parameter: \Lambda_{11}',num2str(lambda11,'%.1f')])
