@@ -10,9 +10,9 @@ for lambda11=[1,2]
     hyperparameter.ap2tradeoff(3)=lambda11;
 %% 运行
     planner_ap;
-    executeInVrep;
+    executeInVrep;  
 %% 保存原始数据
     saveData([inputData.task_name,'_',num2str(lambda11,'%.1f')],ProjectPath);
 %% 格式化生成各图像
-    formatData([inputData.task_name,'_',num2str(lambda11,'%.1f')],ProjectPath,'fig');
+    formatData([inputData.task_name,'_',num2str(lambda11,'%.1f')],ProjectPath);
 end
