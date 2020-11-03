@@ -20,5 +20,6 @@ global outputData
     ax.FontSize=12;
     ax.XLabel.String='Time (sec)';
     ax.YLabel.String='End-effector Position (m)';
-    ax.XLim(2)=outputData.segment_curtimes(end);
+    ax.XLim(2)=outputData.segment_curtimes(end)+0.01;
+    ax.YLim=[-0.5,1.0];
 end

@@ -2,10 +2,14 @@
 plotMinDis();
 
 function plotMinDis()
-global fromVrepData
-    plot(fromVrepData.mindis_variation)
+global fromVrepData outputData
+    data=fromVrepData.mindis_variation(2:end);
+    size=length(data);
+    plot(linspace(0,outputData.segment_curtimes(end),size),data)
+    hold on
     ax=gca;
-    ax.FontSize=12;
+    plot([0,ax.XLim(2)],[0.01,0.01],'--')
+    ax.FontSize=12; 
     ax.YLabel.String = 'Minimum Distance (m)';
     ax.XLabel.String = 'Time (s)';
 end
