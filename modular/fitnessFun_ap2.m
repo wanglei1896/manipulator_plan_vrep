@@ -85,7 +85,7 @@ classdef fitnessFun_ap2
                 end
                 if min_dis>obj.hyperparameter.ob_e
                     ot=1/min_dis;
-                else% min_dis<=ob_e
+                else% min_dis<=1e-4
                     ot=1/obj.hyperparameter.ob_e;
                 end
                 ot=ot*obj.hyperparameter.ob_e;

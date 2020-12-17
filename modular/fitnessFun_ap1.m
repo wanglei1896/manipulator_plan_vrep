@@ -59,16 +59,14 @@ classdef fitnessFun_ap1
                         min_dis=dis;
                     end
                 end
-            end 
-            %if min_dis>=1e-2
-            %    oa=0;
-            %else
+            end
+            min_dis=min_dis-obj.hyperparameter.ob_mindis;
             if min_dis>obj.hyperparameter.ob_e
                 oa=1/min_dis;
             else% min_dis<=ob_e
                 oa=1/obj.hyperparameter.ob_e;
             end
-            oa=(oa*obj.hyperparameter.ob_e)^obj.hyperparameter.ob_beta;
+            oa=oa^obj.hyperparameter.ob_beta;
             end
             %{
               fdt表示机械臂末端与给定路径点的相符程度度量（越小越好）
