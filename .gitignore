@@ -1,6 +1,5 @@
 # generate files
 **/*.asv
-**/*.mat
 **/*.aux
 **/*.bbl
 **/*.dvi
