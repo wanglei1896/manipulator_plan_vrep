@@ -3,12 +3,15 @@ function joint_variation(info)
 global outputData model
     if isequal(info,'q')
         data=outputData.trajectory(1:model.joint_num,:);
+        dof=size(data,1);
         y_label='Joint Angle (rad)';
     elseif isequal(info,'v')
         data=outputData.trajectory(model.joint_num+1:model.joint_num*2,:);
+        dof=size(data,1);
         y_label='Joint Velocity (rad/s)';
     elseif isequal(info,'a')
         data=outputData.trajectory(model.joint_num*2+1:model.joint_num*3,:);
+        dof=size(data,1);
         y_label='Joint Acceleration (rad/s^2)';
     end
     segnum = length(outputData.segment_times);
@@ -19,20 +22,28 @@ global outputData model
         t=[t, temp(2:end)];
     end
     plot(t, data','-');
-    hlegend = legend('joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6');
-    hlegend.NumColumns = 2;
+    setLegend(dof);
     %hold on,
     grid on,
     xticks(round(outputData.segment_curtimes,2)) %显示重要指示线
-    %yticks(-2*pi:pi/2:2*pi) %同上
-    %ylim([-2*pi, 2*pi])
-    %yticklabels({'-2\pi','-1.5\pi','-\pi','-0.5\pi','0','0.5\pi','\pi','1.5\pi','2\pi'})
-    yticks(-pi:pi/2:pi)
-    ylim([-pi, pi])
-    yticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+    yticks(-2*pi:pi/2:2*pi) %同上
+    if isequal(info,'q') && dof==6
+        ylim([-pi, 2*pi])
+    else
+        ylim([-pi, pi])
+    end
+    yticklabels({'-2\pi','-1.5\pi','-\pi','-0.5\pi','0','0.5\pi','\pi','1.5\pi','2\pi'})
     ax=gca;
-    ax.FontSize=12;
     ax.XLabel.String='Time (sec)';
     ax.YLabel.String=y_label;
     ax.XLim(2)=round(outputData.segment_curtimes(end),2);
+end
+
+function setLegend(dof)
+    legends=[];
+    for i=1:dof
+        legends=[legends;['joint', num2str(i)]];
+    end
+    hlegend = legend(legends);
+    hlegend.NumColumns = 3;
 end

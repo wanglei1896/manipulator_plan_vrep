@@ -58,7 +58,8 @@ global outputData model vrep fromVrepData
                     snapshot_count=snapshot_count+1;
                     snapshots(:,:,:,snapshot_count)=image;
                 end
-                pause(0.1);
+                % 为了有充分时间截图，这里等待时间长一点
+                pause(1);
                 
             end
             

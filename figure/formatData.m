@@ -10,20 +10,25 @@ function formatData(taskName, ProjectPath)
     load([dataPath,'/',taskName,'_inputData.mat'])
     current_figure=figure;
     cost_variation;
+    current_figure.CurrentAxes.FontSize=16;
     saveas(current_figure, [ProjectPath,'./figure/result/fig','/',taskName,'_cost_variation.fig'], 'fig');
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_cost_variation.eps'], 'epsc');
     clf,
     joint_variation('q');
+    current_figure.CurrentAxes.FontSize=16;
     saveas(current_figure, [ProjectPath,'./figure/result/fig','/',taskName,'_joint_variation_q.fig'], 'fig');
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_joint_variation_q.eps'], 'epsc');
     joint_variation('v');
+    current_figure.CurrentAxes.FontSize=16;
     saveas(current_figure, [ProjectPath,'./figure/result/fig','/',taskName,'_joint_variation_v.fig'], 'fig');
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_joint_variation_v.eps'], 'epsc');
     joint_variation('a');
+    current_figure.CurrentAxes.FontSize=16;
     saveas(current_figure, [ProjectPath,'./figure/result/fig','/',taskName,'_joint_variation_a.fig'], 'fig');
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_joint_variation_a.eps'], 'epsc');
     clf,
     end_variation;
+    current_figure.CurrentAxes.FontSize=16;
     saveas(current_figure, [ProjectPath,'./figure/result/fig','/',taskName,'_end_variation.fig'], 'fig');
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_end_variation.eps'], 'epsc');
     clf,
@@ -32,6 +37,7 @@ function formatData(taskName, ProjectPath)
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_oa_dt_variation.eps'], 'epsc');
     clf,
     mindis_variation;
+    current_figure.CurrentAxes.FontSize=16;
     saveas(current_figure, [ProjectPath,'./figure/result/fig','/',taskName,'_mindis_variation.fig'], 'fig');
     saveas(current_figure, [ProjectPath,'./figure/result/eps','/',taskName,'_mindis_variation.eps'], 'epsc');
     clf,

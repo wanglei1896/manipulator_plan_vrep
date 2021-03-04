@@ -8,8 +8,9 @@ global fromVrepData outputData
     plot(linspace(0,outputData.segment_curtimes(end),size),data)
     hold on
     ax=gca;
+    ax.XLim(2)=outputData.segment_curtimes(end);
     plot([0,ax.XLim(2)],[0.01,0.01],'--')
-    ax.FontSize=12; 
+    ax.YLim(1) = 0;
     ax.YLabel.String = 'Minimum Distance (m)';
     ax.XLabel.String = 'Time (s)';
 end

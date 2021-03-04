@@ -14,7 +14,7 @@ for i=1:2
     planner_ap;
     executeInVrep;
 %% 保存原始数据
-    saveData([inputData.task_name,'_',num2str(i)],ProjectPath);
+    saveData(['n_',inputData.task_name,'_',num2str(i)],ProjectPath);
 %% 格式化生成各图像
-    formatData([inputData.task_name,'_',num2str(i)],ProjectPath);
+    formatData(['n_',inputData.task_name,'_',num2str(i)],ProjectPath);
 end
